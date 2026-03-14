@@ -1,0 +1,115 @@
+:root {
+    --bg-color: #E0F7FA;
+    --primary: #FF9F1C;
+    --secondary: #2EC4B6;
+    --text-dark: #011627;
+    --card-back: #E71D36;
+}
+
+body {
+    font-family: 'Comic Sans MS', 'Chalkboard SE', sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text-dark);
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+}
+
+#game-container {
+    background: white;
+    width: 100%;
+    max-width: 500px;
+    height: 100vh;
+    box-shadow: 0 0 20px rgba(0,0,0,0.1);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+header {
+    background: var(--primary);
+    color: white;
+    padding: 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+header h1 { margin: 0; font-size: 1.5rem; }
+
+button {
+    background: var(--secondary);
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: transform 0.1s;
+}
+
+button:active { transform: scale(0.95); }
+
+.screen { display: none; padding: 20px; flex-grow: 1; flex-direction: column; }
+.screen.active { display: flex; }
+
+/* Lobby Styles */
+#lobby-screen input {
+    padding: 12px;
+    font-size: 1.2rem;
+    border: 2px solid var(--secondary);
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+/* Card Table & Animations */
+#card-table {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    margin: 20px 0;
+}
+
+.card {
+    background: var(--card-back);
+    height: 120px;
+    border-radius: 12px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    color: white;
+    font-size: 1.5rem;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    transition: transform 0.3s;
+    user-select: none;
+    white-space: pre-wrap;
+}
+
+.card.flipped {
+    background: white;
+    color: var(--text-dark);
+    border: 3px solid var(--secondary);
+    transform: rotateY(180deg);
+    cursor: default;
+}
+
+#dialogue-box {
+    background: #FFF3E0;
+    padding: 15px;
+    border-radius: 8px;
+    text-align: center;
+    font-weight: bold;
+    border: 2px dashed var(--primary);
+    min-height: 24px;
+}
+
+#scoreboard { margin-top: auto; background: #f1f1f1; padding: 15px; border-radius: 12px;}
+#player-list { list-style: none; padding: 0; margin: 0; }
+#player-list li { display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px solid #ccc; }

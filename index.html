@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chor Police Multiplayer</title>
+    
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-database-compat.js"></script>
+
+    <style>
+        :root {
+            --bg-color: #E0F7FA;
+            --primary: #FF9F1C;
+            --secondary: #2EC4B6;
+            --text-dark: #011627;
+            --card-back: #E71D36;
+        }
+
+        body {
+            font-family: 'Comic Sans MS', 'Chalkboard SE', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-dark);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        #game-container {
+            background: white;
+            width: 100%;
+            max-width: 500px;
+            height: 100vh;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        header {
+            background: var(--primary);
+            color: white;
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        header h1 { margin: 0; font-size: 1.5rem; }
+
+        button {
+            background: var(--secondary);
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.1s;
+        }
+
+        button:active { transform: scale(0.95); }
+
+        .screen { display: none; padding: 20px; flex-grow: 1; flex-direction: column; }
+        .screen.active { display: flex; }
+
+        /* Lobby Styles */
+        #lobby-screen input {
+            padding: 12px;
+            font-size: 1.2rem;
+            border: 2px solid var(--secondary);
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        /* Card Table & Animations */
+        #card-table {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .card {
+            background: var(--card-back);
+            height: 120px;
+            border-radius: 12px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            color: white;
+            font-size: 1.5rem;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            transition: transform 0.3s;
+            user-select: none;
+            white-space: pre-wrap;
+        }
+
+        .card.flipped {
+            background: white;
+            color: var(--text-dark);
+            border: 3px solid var(--secondary);
+            transform: rotateY(180deg);
+            cursor: default;
+        }
+
+        #dialogue-box {
+            background: #FFF3E0;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: bold;
+            border: 2px dashed var(--primary);
+            min-height: 24px;
+        }
+
+        #scoreboard { margin-top: auto; background: #f1f1f1; padding: 15px; border-radius: 12px;}
+        #player-list { list-style: none; padding: 0; margin: 0; }
+        #player-list li { display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px solid #ccc; }
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <header>
+            <h1>👮 Chor Police 🏃‍♂️</h1>
+            <div class="controls">
+                <button id="sound-toggle">🔊 Sound On</button>
+            </div>
+        </header>
+
+        <div id="lobby-screen" class="screen active">
+            <h2>Welcome!</h2>
+            <input type="text" id="player-name" placeholder="Enter your name..." maxlength="12">
+            <button id="join-btn">Join Game Room</button>
+        </div>
+
+        <div id="game-screen" class="screen">
+            <div id="dialogue-box">Waiting for players (Need 4)</div>
+            
+            <div id="card-table"></div>
+
+            <div id="scoreboard">
+                <h3>Lobby</h3>
+                <ul id="player-list"></ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- Firebase Initialization ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyBWT6w0EsRYm_Cd2P6JmeQlQjZpNK07V0Y",
+            authDomain: "chorpolicegame-8c330.firebaseapp.com",
+            // NOTE: Double check this URL in your Firebase Console -> Realtime Database
+            databaseURL: "https://chorpolicegame-8c330-default-rtdb.firebaseio.com",
+            projectId: "chorpolicegame-8c330",
+            storageBucket: "chorpolicegame-8c330.firebasestorage.app",
+            messagingSenderId: "70710319190",
+            appId: "1:70710319190:web:ef3d024730bacf241543f7",
+            measurementId: "G-XDZ3J1R6F1"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        // --- Game State & Variables ---
+        let playerName = "";
+        let playerId = "player_" + Math.random().toString(36).substr(2, 9);
+        let roomCode = "test_room_1"; // Hardcoded for now. Later, users can type this.
+        let isHost = false;
+        let myRole = null;
+        let playersData = {};
+        let soundEnabled = true;
+        let hasTriggeredDialogue = false;
+
+        const roles = [
+            { name: "OC", points: 2000 },
+            { name: "Daroga", points: 1200 },
+            { name: "Police", points: 500 },
+            { name: "Chor", points: 0 }
+        ];
+
+        // --- DOM Elements ---
+        const lobbyScreen = document.getElementById('lobby-screen');
+        const gameScreen = document.getElementById('game-screen');
+        const joinBtn = document.getElementById('join-btn');
+        const nameInput = document.getElementById('player-name');
+        const cardTable = document.getElementById('card-table');
+        const dialogueBox = document.getElementById('dialogue-box');
+        const soundToggle = document.getElementById('sound-toggle');
+        const playerListUl = document.getElementById('player-list');
+
+        // --- Event Listeners ---
+        soundToggle.addEventListener('click', () => {
+            soundEnabled = !soundEnabled;
+            soundToggle.innerText = soundEnabled ? "🔊 Sound On" : "🔇 Sound Off";
+        });
+
+        joinBtn.addEventListener('click', () => {
+            if (nameInput.value.trim().length > 0) {
+                playerName = nameInput.value.trim();
+                
+                lobbyScreen.classList.remove('active');
+                gameScreen.classList.add('active');
+                
+                joinRoom();
+            } else {
+                alert("Please enter a name first!");
+            }
+        });
+
+        // --- Firebase Multiplayer Logic ---
+        function joinRoom() {
+            const playerRef = db.ref(`rooms/${roomCode}/players/${playerId}`);
+            
+            // Add player to database
+            playerRef.set({ name: playerName, score: 0 });
+            
+            // Remove player if they close the tab
+            playerRef.onDisconnect().remove();
+
+            listenToRoomData();
+        }
+
+        function listenToRoomData() {
+            // Listen for Players
+            db.ref(`rooms/${roomCode}/players`).on('value', snap => {
+                playersData = snap.val() || {};
+                const playerIds = Object.keys(playersData);
+                
+                playerListUl.innerHTML = ""; // Clear list
+                
+                playerIds.forEach(id => {
+                    const li = document.createElement('li');
+                    li.innerText = playersData[id].name;
+                    playerListUl.appendChild(li);
+                });
+
+                // Determine Host (first person in the room)
+                if (playerIds.length > 0 && playerIds[0] === playerId) {
+                    isHost = true;
+                } else {
+                    isHost = false;
+                }
+
+                // If room is full, host starts the game
+                if (playerIds.length === 4 && isHost) {
+                    db.ref(`rooms/${roomCode}/gameState`).once('value', gSnap => {
+                        if (!gSnap.val() || gSnap.val().status !== 'playing') {
+                            hostDealsCards();
+                        }
+                    });
+                }
+            });
+
+            // Listen for Cards state
+            db.ref(`rooms/${roomCode}/cards`).on('value', snap => {
+                const cards = snap.val();
+                if (cards) {
+                    renderCards(cards);
+                }
+            });
+        }
+
+        function hostDealsCards() {
+            hasTriggeredDialogue = false; // Reset dialogue flag
+            const shuffledRoles = shuffleArray(roles);
+            const cardData = {};
+            
+            for(let i = 0; i < 4; i++) {
+                cardData[i] = { 
+                    role: shuffledRoles[i].name, 
+                    points: shuffledRoles[i].points, 
+                    owner: null 
+                };
+            }
+            
+            // Push shuffled cards to DB
+            db.ref(`rooms/${roomCode}/cards`).set(cardData);
+            db.ref(`rooms/${roomCode}/gameState`).set({ status: 'playing' });
+            db.ref(`rooms/${roomCode}/dialogue`).set("Fast! Pick a card!");
+        }
+
+        function renderCards(cards) {
+            cardTable.innerHTML = "";
+            let claimedCount = 0;
+            let iClaimedACard = false;
+
+            // Check if I already claimed a card
+            Object.values(cards).forEach(c => {
+                if (c.owner === playerId) iClaimedACard = true;
+            });
+
+            Object.keys(cards).forEach(key => {
+                const cardObj = cards[key];
+                const cardEl = document.createElement('div');
+                cardEl.classList.add('card');
+
+                if (cardObj.owner) {
+                    claimedCount++;
+                    cardEl.classList.add('flipped');
+                    cardEl.style.transform = "rotateY(180deg)";
+                    
+                    if (cardObj.owner === playerId) {
+                        myRole = cardObj.role;
+                        cardEl.innerText = `${cardObj.role}\n(${cardObj.points})`;
+                    } else {
+                        const ownerName = playersData[cardObj.owner] ? playersData[cardObj.owner].name : "Player";
+                        cardEl.innerText = `Picked by\n${ownerName}`;
+                        cardEl.style.fontSize = "1rem";
+                    }
+                } else {
+                    cardEl.innerText = "?";
+                    cardEl.addEventListener('click', () => {
+                        if (!iClaimedACard) {
+                            // Update the card in Firebase to mark it as mine
+                            db.ref(`rooms/${roomCode}/cards/${key}`).update({ owner: playerId });
+                        }
+                    });
+                }
+                cardTable.appendChild(cardEl);
+            });
+
+            if (claimedCount === 4 && !hasTriggeredDialogue) {
+                hasTriggeredDialogue = true;
+                if (isHost) triggerCinematicDialogue();
+            }
+        }
+
+        // --- Helper Functions ---
+        function shuffleArray(array) {
+            let shuffled = [...array];
+            for (let i = shuffled.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+            }
+            return shuffled;
+        }
+
+        // Listen for dialogue updates from the Host
+        db.ref(`rooms/${roomCode}/dialogue`).on('value', snap => {
+            if (snap.val()) dialogueBox.innerHTML = snap.val();
+        });
+
+        function triggerCinematicDialogue() {
+            const dialogueRef = db.ref(`rooms/${roomCode}/dialogue`);
+            
+            dialogueRef.set("Processing roles...");
+            
+            setTimeout(() => {
+                dialogueRef.set("<em>Police, police; koun hai??</em>");
+            }, 2000);
+
+            setTimeout(() => {
+                dialogueRef.set("<strong>Hum hai!</strong>");
+            }, 5000);
+
+            setTimeout(() => {
+                dialogueRef.set("<span style='color:red;'>Chor ko pakdo!</span>");
+                // TODO: Activate the Police guessing phase here
+            }, 7000);
+        }
+    </script>
+</body>
+</html>
