@@ -9,7 +9,9 @@ const firebaseConfig = {
     appId: "1:70710319190:web:ef3d024730bacf241543f7",
     measurementId: "G-XDZ3J1R6F1"
 };
-firebase.initializeApp(firebaseConfig);
+if (!firebase.apps.length) {
+    firebase.initializeApp(firebaseConfig);
+}
 const db = firebase.database();
 
 // --- Game Variables ---
@@ -47,12 +49,20 @@ document.getElementById('sound-toggle').addEventListener('click', function() {
     this.innerText = soundEnabled ? "🔊" : "🔇";
 });
 
+// --- Helper: Auto-assign Name ---
+function getValidName() {
+    let nameInput = document.getElementById('player-name').value.trim();
+    if (!nameInput) {
+        // Automatically assign a unique guest name if left blank
+        nameInput = "Guest_" + Math.floor(Math.random() * 10000);
+        document.getElementById('player-name').value = nameInput;
+    }
+    return nameInput;
+}
+
 // --- Lobby Logic (Create & Join) ---
 document.getElementById('create-btn').addEventListener('click', () => {
-    const nameInput = document.getElementById('player-name').value.trim();
-    if (!nameInput) return alert("Enter your name first!");
-    
-    playerName = nameInput;
+    playerName = getValidName();
     roomMaxPlayers = parseInt(document.getElementById('player-count').value);
     roomCode = Math.random().toString(36).substring(2, 8).toUpperCase();
     
@@ -62,16 +72,14 @@ document.getElementById('create-btn').addEventListener('click', () => {
 });
 
 document.getElementById('join-btn').addEventListener('click', () => {
-    const nameInput = document.getElementById('player-name').value.trim();
+    playerName = getValidName();
     const codeInput = document.getElementById('room-code-input').value.trim().toUpperCase();
     
-    if (!nameInput) return alert("Enter your name first!");
     if (codeInput.length !== 6) return alert("Enter a valid 6-digit code!");
     
     // Check if room exists
     db.ref(`rooms/${codeInput}/info`).once('value', snap => {
         if (snap.exists()) {
-            playerName = nameInput;
             roomCode = codeInput;
             roomMaxPlayers = snap.val().maxPlayers;
             enterGameScreen();
@@ -95,6 +103,7 @@ function enterGameScreen() {
     window.history.replaceState(null, '', `?room=${roomCode}`);
     
     joinRoomFirebase();
+    startChatListener(); // FIX: Start chat ONLY after roomCode is known
 }
 
 // --- Multiplayer Firebase Logic ---
@@ -231,6 +240,11 @@ function activatePoliceGuessing() {
     guessSec.innerHTML = "<h3>You are the Police! Who is the Chor?</h3>";
     guessSec.style.display = "block";
     
+    // Clear previous buttons
+    Array.from(guessSec.children).forEach(child => {
+        if (child.tagName === "BUTTON") child.remove();
+    });
+    
     Object.keys(playersData).forEach(id => {
         if (id !== playerId) {
             const btn = document.createElement('button');
@@ -264,14 +278,14 @@ function makeGuess(suspectId) {
             updateScore(chorId, 500); // Chor wins points
         }
 
-        // Auto-award points for everyone else
+        // Auto-award points for everyone else (OC, Daroga, etc.)
         Object.values(cards).forEach(c => {
             if (c.role !== "Police" && c.role !== "Chor" && c.owner) {
                 updateScore(c.owner, c.points);
             }
         });
         
-        // Reset the round after 5 seconds
+        // Loop the game completely intact (Chat, scores, players remain)
         setTimeout(() => {
             if(isHost) {
                 db.ref(`rooms/${roomCode}/guessPhase`).remove();
@@ -314,10 +328,15 @@ function sendChat() {
 document.getElementById('send-chat-btn').addEventListener('click', sendChat);
 chatInput.addEventListener('keypress', e => { if (e.key === 'Enter') sendChat(); });
 
-// Listen for incoming chats
-db.ref(`rooms/${roomCode}/chat`).on('child_added', snap => {
-    const msg = snap.val();
+// FIX: Start listening for chat only AFTER entering the room
+function startChatListener() {
     const box = document.getElementById('chat-messages');
-    box.innerHTML += `<div style="margin-bottom: 5px;"><strong>${msg.sender}:</strong> ${msg.text}</div>`;
-    box.scrollTop = box.scrollHeight; // Auto-scroll down
-});
+    box.innerHTML = ""; // Clear box on load
+    
+    // Listen for all past and future chats in this specific room
+    db.ref(`rooms/${roomCode}/chat`).on('child_added', snap => {
+        const msg = snap.val();
+        box.innerHTML += `<div style="margin-bottom: 5px;"><strong>${msg.sender}:</strong> ${msg.text}</div>`;
+        box.scrollTop = box.scrollHeight; // Auto-scroll down
+    });
+}
