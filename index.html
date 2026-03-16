@@ -201,10 +201,13 @@
         </div>
 
         <div id="game-screen" class="screen">
-            <div id="room-info">
+        <div id="room-info">
                 <p>Room: <strong id="display-room-code">----</strong> (<span id="display-max-players">4</span>/4)</p>
-                <button id="copy-link-btn">📋 Copy Link</button>
-                <button id="exit-btn" style="background: #E71D36;">🚪 Exit</button>
+                <div class="room-actions">
+                    <button id="rename-btn" class="btn-outline" style="padding: 6px 10px; font-size: 0.8rem;">Rename</button>
+                    <button id="copy-link-btn" style="background: rgba(255,255,255,0.2); padding: 6px 10px; font-size: 0.8rem;">Copy Link</button>
+                    <button id="exit-btn" class="danger" style="padding: 6px 10px; font-size: 0.8rem;">Exit</button>
+                </div>
             </div>
 
             <div id="dialogue-box">Waiting for players to join...</div>
