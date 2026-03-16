@@ -6,8 +6,7 @@ const firebaseConfig = {
     projectId: "chorpolicegame-8c330",
     storageBucket: "chorpolicegame-8c330.firebasestorage.app",
     messagingSenderId: "70710319190",
-    appId: "1:70710319190:web:ef3d024730bacf241543f7",
-    measurementId: "G-XDZ3J1R6F1"
+    appId: "1:70710319190:web:ef3d024730bacf241543f7"
 };
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
@@ -61,7 +60,6 @@ document.getElementById('rename-btn').addEventListener('click', () => {
         playerName = newName.trim();
         db.ref(`rooms/${roomCode}/players/${playerId}/name`).set(playerName);
         
-        // System message for rename
         db.ref(`rooms/${roomCode}/chat`).push({
             sender: "System",
             text: `A player is now known as ${playerName}`
@@ -78,7 +76,12 @@ document.getElementById('create-btn').addEventListener('click', () => {
     roomMaxPlayers = parseInt(document.getElementById('player-count').value);
     roomCode = Math.random().toString(36).substring(2, 8).toUpperCase();
     
-    db.ref(`rooms/${roomCode}/info`).set({ maxPlayers: roomMaxPlayers, status: "lobby" });
+    // FIX: Save hostId so the host never gets randomly reassigned
+    db.ref(`rooms/${roomCode}/info`).set({ 
+        maxPlayers: roomMaxPlayers, 
+        status: "lobby",
+        hostId: playerId 
+    });
     db.ref(`rooms/${roomCode}/gameState`).set({ round: 1, status: 'lobby' });
     enterGameScreen();
 });
@@ -90,11 +93,23 @@ document.getElementById('join-btn').addEventListener('click', () => {
     if (!nameInput) return alert("Please enter your name!");
     if (codeInput.length !== 6) return alert("Enter a valid 6-digit code.");
     
-    db.ref(`rooms/${codeInput}/info`).once('value', snap => {
+    // FIX: Check if room is full or already playing before letting them join
+    db.ref(`rooms/${codeInput}`).once('value', snap => {
         if (snap.exists()) {
+            const roomData = snap.val();
+            
+            const currentPlayersCount = roomData.players ? Object.keys(roomData.players).length : 0;
+            if (currentPlayersCount >= roomData.info.maxPlayers) {
+                return alert("Sorry, this room is already full!");
+            }
+            
+            if (roomData.gameState && roomData.gameState.status !== "lobby" && roomData.gameState.status !== "ended") {
+                return alert("This game has already started. Wait for the next round!");
+            }
+
             playerName = nameInput;
             roomCode = codeInput;
-            roomMaxPlayers = snap.val().maxPlayers;
+            roomMaxPlayers = roomData.info.maxPlayers;
             enterGameScreen();
         } else {
             alert("Room not found! Check the code.");
@@ -113,7 +128,6 @@ function enterGameScreen() {
     
     window.history.replaceState(null, '', `?room=${roomCode}`);
     
-    // FIX: Clear chat history before joining a new room
     document.getElementById('chat-messages').innerHTML = ""; 
     
     joinRoomFirebase();
@@ -130,6 +144,11 @@ function joinRoomFirebase() {
 }
 
 function listenToRoomData() {
+    // FIX: Listen securely for who the Host is
+    db.ref(`rooms/${roomCode}/info/hostId`).on('value', snap => {
+        if(snap.val()) isHost = (snap.val() === playerId);
+    });
+
     db.ref(`rooms/${roomCode}/players`).on('value', snap => {
         playersData = snap.val() || {};
         const playerIds = Object.keys(playersData);
@@ -141,8 +160,6 @@ function listenToRoomData() {
             li.innerHTML = `<span>${playersData[id].name}</span> <span class="score-pill">${playersData[id].score} pts</span>`;
             list.appendChild(li);
         });
-
-        isHost = (playerIds.length > 0 && playerIds[0] === playerId);
 
         if (playerIds.length === roomMaxPlayers && isHost) {
             db.ref(`rooms/${roomCode}/gameState`).once('value', gSnap => {
@@ -204,7 +221,6 @@ function renderCards(cards) {
             
             const ownerName = playersData[cardObj.owner] ? playersData[cardObj.owner].name : "Player";
             
-            // Track dynamic names for dialogue
             if (cardObj.role === "Daroga") darogaName = ownerName;
             if (cardObj.role === "Police") policeName = ownerName;
 
@@ -235,16 +251,16 @@ function triggerCinematicDialogue(daroga, police) {
     
     setTimeout(() => {
         dialogueRef.set(`<strong>${daroga} (Daroga):</strong> "Police, police; koun hai??"`);
-    }, 2000); // 2 seconds
+    }, 2000); 
 
     setTimeout(() => {
         dialogueRef.set(`<strong>${police} (Police):</strong> "Hum hai!"`);
-    }, 5000); // Wait 3s after previous
+    }, 5000); 
 
     setTimeout(() => {
         dialogueRef.set(`<strong>${daroga} (Daroga):</strong> "Chor ko pakdo!"`);
         db.ref(`rooms/${roomCode}/guessPhase`).set(true); 
-    }, 7000); // Wait 2s after previous
+    }, 7000); 
 }
 
 // --- Guessing & 20-Round Logic ---
@@ -255,33 +271,30 @@ db.ref(`rooms/${roomCode}/guessPhase`).on('value', snap => {
 });
 
 function activatePoliceGuessing() {
-            const guessSec = document.getElementById('guess-section');
-            guessSec.innerHTML = "<h3>You are the Police! Who is the Chor?</h3>";
-            guessSec.style.display = "block";
+    const guessSec = document.getElementById('guess-section');
+    guessSec.innerHTML = "<h3>You are the Police! Who is the Chor?</h3>";
+    guessSec.style.display = "block";
+    
+    db.ref(`rooms/${roomCode}/cards`).once('value', snap => {
+        const cards = snap.val();
+        
+        Object.keys(playersData).forEach(id => {
+            let isDaroga = false;
             
-            // OPTIMIZATION: Fetch the cards exactly ONCE to build the buttons instantly
-            db.ref(`rooms/${roomCode}/cards`).once('value', snap => {
-                const cards = snap.val();
-                
-                Object.keys(playersData).forEach(id => {
-                    let isDaroga = false;
-                    
-                    // Check if this specific player holds the Daroga card
-                    Object.values(cards).forEach(c => { 
-                        if (c.owner === id && c.role === "Daroga") isDaroga = true; 
-                    });
-                    
-                    // Do not show a button for the Police (yourself) or the Daroga
-                    if (id !== playerId && !isDaroga) {
-                        const btn = document.createElement('button');
-                        btn.className = "guess-btn";
-                        btn.innerText = playersData[id].name;
-                        btn.onclick = () => makeGuess(id);
-                        guessSec.appendChild(btn);
-                    }
-                });
+            Object.values(cards).forEach(c => { 
+                if (c.owner === id && c.role === "Daroga") isDaroga = true; 
             });
-        }
+            
+            if (id !== playerId && !isDaroga) {
+                const btn = document.createElement('button');
+                btn.className = "guess-btn";
+                btn.innerText = playersData[id].name;
+                btn.onclick = () => makeGuess(id);
+                guessSec.appendChild(btn);
+            }
+        });
+    });
+}
 
 function makeGuess(suspectId) {
     document.getElementById('guess-section').style.display = "none";
@@ -296,7 +309,6 @@ function makeGuess(suspectId) {
             if (c.role === "Chor") chorId = c.owner;
         });
 
-        // Rule: Police Right = Police 500, Chor 0. Police Wrong = Police 0, Chor 500.
         if (suspectRole === "Chor") {
             db.ref(`rooms/${roomCode}/dialogue`).set(`Correct! ${playerName} (Police) caught the Chor! (+500 pts)`);
             updateScore(playerId, 500); 
@@ -306,14 +318,12 @@ function makeGuess(suspectId) {
             updateScore(chorId, 500); 
         }
 
-        // Auto-award exact points for OC, Daroga, Army, DC
         Object.values(cards).forEach(c => {
             if (c.role !== "Police" && c.role !== "Chor" && c.owner) {
                 updateScore(c.owner, c.points);
             }
         });
         
-        // Handle Next Round or Game Over
         setTimeout(() => {
             if(isHost) {
                 if (currentRound >= MAX_ROUNDS) {
