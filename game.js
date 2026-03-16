@@ -255,27 +255,33 @@ db.ref(`rooms/${roomCode}/guessPhase`).on('value', snap => {
 });
 
 function activatePoliceGuessing() {
-    const guessSec = document.getElementById('guess-section');
-    guessSec.innerHTML = "<h3>You are the Police! Who is the Chor?</h3>";
-    guessSec.style.display = "block";
-    
-    // Hide buttons for yourself AND Daroga (Police knows who Daroga is based on dialogue)
-    Object.keys(playersData).forEach(id => {
-        let isDaroga = false;
-        db.ref(`rooms/${roomCode}/cards`).once('value', snap => {
-            const cards = snap.val();
-            Object.values(cards).forEach(c => { if (c.owner === id && c.role === "Daroga") isDaroga = true; });
+            const guessSec = document.getElementById('guess-section');
+            guessSec.innerHTML = "<h3>You are the Police! Who is the Chor?</h3>";
+            guessSec.style.display = "block";
             
-            if (id !== playerId && !isDaroga) {
-                const btn = document.createElement('button');
-                btn.className = "guess-btn";
-                btn.innerText = playersData[id].name;
-                btn.onclick = () => makeGuess(id);
-                guessSec.appendChild(btn);
-            }
-        });
-    });
-}
+            // OPTIMIZATION: Fetch the cards exactly ONCE to build the buttons instantly
+            db.ref(`rooms/${roomCode}/cards`).once('value', snap => {
+                const cards = snap.val();
+                
+                Object.keys(playersData).forEach(id => {
+                    let isDaroga = false;
+                    
+                    // Check if this specific player holds the Daroga card
+                    Object.values(cards).forEach(c => { 
+                        if (c.owner === id && c.role === "Daroga") isDaroga = true; 
+                    });
+                    
+                    // Do not show a button for the Police (yourself) or the Daroga
+                    if (id !== playerId && !isDaroga) {
+                        const btn = document.createElement('button');
+                        btn.className = "guess-btn";
+                        btn.innerText = playersData[id].name;
+                        btn.onclick = () => makeGuess(id);
+                        guessSec.appendChild(btn);
+                    }
+                });
+            });
+        }
 
 function makeGuess(suspectId) {
     document.getElementById('guess-section').style.display = "none";
