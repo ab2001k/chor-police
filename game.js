@@ -2,11 +2,13 @@
 const firebaseConfig = {
     apiKey: "AIzaSyBWT6w0EsRYm_Cd2P6JmeQlQjZpNK07V0Y",
     authDomain: "chorpolicegame-8c330.firebaseapp.com",
-    databaseURL: "https://chorpolicegame-8c330-default-rtdb.firebaseio.com",
+    // ⬇️ THIS IS THE LINE THAT CHANGED ⬇️
+    databaseURL: "https://chorpolicegame-8c330-default-rtdb.asia-southeast1.firebasedatabase.app",
     projectId: "chorpolicegame-8c330",
     storageBucket: "chorpolicegame-8c330.firebasestorage.app",
     messagingSenderId: "70710319190",
-    appId: "1:70710319190:web:ef3d024730bacf241543f7"
+    appId: "1:70710319190:web:ef3d024730bacf241543f7",
+    measurementId: "G-XDZ3J1R6F1"
 };
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
