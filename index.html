@@ -28,66 +28,72 @@
         header { background: var(--bg-app); padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); }
         header h1 { margin: 0; font-size: 1.2rem; font-weight: 700; color: var(--text-main); }
         
-        button { background: var(--primary); color: white; border: none; padding: 10px 16px; border-radius: 10px; font-weight: 600; cursor: pointer; transition: 0.2s; font-family: inherit; }
+        button { background: var(--primary); color: white; border: none; padding: 12px 18px; border-radius: 10px; font-weight: 600; cursor: pointer; transition: 0.2s; font-family: inherit; }
         button:hover { background: var(--primary-hover); }
         button:active { transform: scale(0.95); }
         button.danger { background: var(--accent); }
         button.danger:hover { background: var(--accent-hover); }
         .btn-outline { background: transparent; color: var(--text-main); border: 2px solid var(--border-color); }
 
-        .screen { display: none; padding: 20px; flex-grow: 1; flex-direction: column; overflow-y: auto; }
+        .screen { display: none; padding: 25px 20px; flex-grow: 1; flex-direction: column; overflow-y: auto; gap: 20px; }
         .screen.active { display: flex; }
 
-        input, select { width: 100%; padding: 12px; font-size: 1rem; border: 2px solid var(--border-color); border-radius: 10px; box-sizing: border-box; font-family: inherit; margin-bottom: 15px; }
-        .card-panel { background: var(--surface); padding: 20px; border-radius: 16px; margin-bottom: 20px; border: 1px solid var(--border-color); }
+        input, select { width: 100%; padding: 14px; font-size: 1rem; border: 2px solid var(--border-color); border-radius: 10px; box-sizing: border-box; font-family: inherit; margin-bottom: 10px;}
+        .card-panel { background: var(--surface); padding: 20px; border-radius: 16px; border: 1px solid var(--border-color); display: flex; flex-direction: column; gap: 10px;}
 
         .overlay { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.9); z-index: 1000; justify-content: center; align-items: center; padding: 20px; box-sizing: border-box; }
         .overlay.active { display: flex; }
         .modal-box { background: white; padding: 30px; border-radius: 20px; width: 100%; max-width: 350px; text-align: center; }
 
-        #room-info { display: flex; flex-direction: column; align-items: center; gap: 8px; background: var(--text-main); color: white; padding: 15px; border-radius: 12px; margin-bottom: 15px; }
+        #room-info { display: flex; flex-direction: column; align-items: center; gap: 8px; background: var(--text-main); color: white; padding: 15px; border-radius: 12px; }
         #room-info p { margin: 0; font-weight: 500; }
         #room-info strong { color: #38BDF8; font-size: 1.2rem; }
-        .room-actions { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; width: 100%;}
+        .room-actions { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; width: 100%; margin-top: 5px;}
         
-        #host-requests { display: none; background: #FEF3C7; border: 2px solid #F59E0B; padding: 15px; border-radius: 12px; margin-bottom: 15px; }
+        #host-requests { display: none; background: #FEF3C7; border: 2px solid #F59E0B; padding: 15px; border-radius: 12px; }
         .request-item { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; background: white; padding: 8px; border-radius: 8px; font-size: 0.9rem;}
 
-        #card-table { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 10px 0; perspective: 1000px; }
+        #card-table { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; perspective: 1000px; }
         #card-table.six-players { grid-template-columns: 1fr 1fr 1fr; }
-        .card { background: var(--card-back); height: 110px; border-radius: 12px; display: flex; justify-content: center; align-items: center; text-align: center; color: white; font-weight: 600; cursor: pointer; transition: transform 0.4s; user-select: none; border: 2px solid rgba(255,255,255,0.1); transform-style: preserve-3d; position: relative;}
         
+        .card { background: var(--card-back); height: 110px; border-radius: 12px; display: flex; justify-content: center; align-items: center; text-align: center; color: white; font-weight: 600; cursor: pointer; transition: transform 0.4s, box-shadow 0.3s; user-select: none; border: 2px solid rgba(255,255,255,0.1); transform-style: preserve-3d; position: relative;}
         .card.flipped { background: white; color: var(--text-main); border: 2px solid var(--primary); transform: rotateY(180deg); }
-        .card-inner-text { transform: rotateY(180deg); width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; } 
-        .card-avatar { width: 30px; height: 30px; border-radius: 50%; border: 2px solid var(--primary); object-fit: cover;}
-
-        #dialogue-box { background: #EFF6FF; color: #1E3A8A; padding: 15px; border-radius: 12px; text-align: center; font-weight: 500; border-left: 4px solid var(--primary); margin-bottom: 15px; }
-        #guess-section { display: none; background: #FFF1F2; padding: 15px; border-radius: 12px; text-align: center; border: 1px solid #FECDD3; margin-bottom: 15px; }
+        .card.suspect-glow { box-shadow: 0 0 15px 4px rgba(225, 29, 72, 0.7); border-color: var(--accent); animation: pulseGlow 1.5s infinite; }
         
-        #player-list { list-style: none; padding: 0; margin: 0; background: var(--surface); padding: 10px; border-radius: 12px; margin-bottom: 15px;}
+        @keyframes pulseGlow { 0% { box-shadow: 0 0 10px 2px rgba(225, 29, 72, 0.5); } 50% { box-shadow: 0 0 20px 6px rgba(225, 29, 72, 0.8); } 100% { box-shadow: 0 0 10px 2px rgba(225, 29, 72, 0.5); } }
+
+        .card-inner-text { transform: rotateY(180deg); width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; } 
+        .card-avatar { width: 32px; height: 32px; border-radius: 50%; border: 2px solid var(--primary); object-fit: cover;}
+
+        #dialogue-box { background: #EFF6FF; color: #1E3A8A; padding: 15px; border-radius: 12px; text-align: center; font-weight: 500; border-left: 4px solid var(--primary); font-size: 0.95rem; min-height: 24px;}
+        #guess-section { display: none; background: #FFF1F2; padding: 15px; border-radius: 12px; text-align: center; border: 1px solid #FECDD3; }
+        
+        #player-list { list-style: none; padding: 0; margin: 0; background: var(--surface); padding: 10px; border-radius: 12px;}
         #player-list li { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--border-color); }
         .score-pill { background: var(--text-main); color: white; padding: 2px 10px; border-radius: 20px; font-size: 0.85rem; }
+        .status-dot { height: 10px; width: 10px; border-radius: 50%; display: inline-block; margin-right: 6px; }
+        .status-online { background-color: #10B981; box-shadow: 0 0 5px #10B981; }
+        .status-offline { background-color: #94A3B8; }
 
         /* Chat & Emoji Bar */
-        #chat-wrapper { transition: 0.3s; }
+        #chat-wrapper { transition: 0.3s; margin-top: auto; }
         #chat-wrapper.hidden { display: none; }
-        #chat-box { background: white; border: 1px solid var(--border-color); border-radius: 12px; display: flex; flex-direction: column; height: 170px; flex-shrink: 0;}
+        #chat-box { background: white; border: 1px solid var(--border-color); border-radius: 12px; display: flex; flex-direction: column; height: 160px; flex-shrink: 0;}
         #emoji-bar { display: flex; justify-content: space-around; background: var(--surface); padding: 8px; border-bottom: 1px solid var(--border-color); font-size: 1.2rem; border-radius: 12px 12px 0 0;}
         .emoji-btn { cursor: pointer; transition: 0.2s; user-select: none; }
         .emoji-btn:active { transform: scale(1.3); }
         
         #chat-messages { flex-grow: 1; overflow-y: auto; padding: 10px; font-size: 0.85rem; display: flex; flex-direction: column; gap: 6px; }
-        .chat-msg { background: var(--surface); padding: 6px 10px; border-radius: 8px; align-self: flex-start; max-width: 85%;}
+        .chat-msg { background: var(--surface); padding: 6px 10px; border-radius: 8px; align-self: flex-start; max-width: 85%; word-wrap: break-word;}
         .chat-controls { display: flex; border-top: 1px solid var(--border-color); }
         #chat-input { border: none; border-radius: 0 0 0 12px; padding: 10px; margin: 0; flex-grow: 1;}
         #send-chat-btn { border-radius: 0 0 12px 0; padding: 0 15px; }
 
-        /* Floating Emoji Animation */
         .floating-emoji { position: fixed; bottom: 20%; left: 50%; font-size: 4rem; transform: translateX(-50%); animation: floatUp 2s forwards; z-index: 2000; pointer-events: none;}
         @keyframes floatUp { 0% { bottom: 20%; opacity: 1; transform: translateX(-50%) scale(0.5); } 20% { opacity: 1; transform: translateX(-50%) scale(1.2); } 100% { bottom: 70%; opacity: 0; transform: translateX(-50%) scale(1); } }
         
         /* Branding */
-        .creator-branding { text-align: center; margin-top: 20px; font-size: 0.75rem; color: var(--text-light); }
+        .creator-branding { text-align: center; font-size: 0.8rem; color: var(--text-light); margin-top: auto; padding-top: 20px;}
         .creator-branding a { color: var(--primary); text-decoration: none; font-weight: 600;}
         
         ::-webkit-scrollbar { width: 6px; }
@@ -105,7 +111,7 @@
                 <h2 style="margin-top:0; color: var(--text-main);">🚓 Chor Police</h2>
                 <p style="color: var(--text-light); margin-bottom: 20px; font-size: 0.9rem;">Sign in to save your Kings & Queens titles!</p>
                 <button id="google-login-btn" style="width: 100%; background: white; color: #333; border: 1px solid #ccc; display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 15px;">
-                    Google Login
+                    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="20"> Google Login
                 </button>
                 <div style="margin-bottom: 15px; color: var(--text-light);">OR</div>
                 <input type="text" id="guest-name-input" placeholder="Enter Guest Name" maxlength="12" style="text-align: center;">
@@ -128,7 +134,7 @@
                 
                 <div style="margin-bottom: 15px;">
                     <p id="profile-desc" style="font-size: 0.9rem; color: var(--text-light); font-style: italic; margin: 0;">Loading description...</p>
-                    <button class="btn-outline" id="edit-desc-btn" style="padding: 2px 8px; font-size: 0.7rem; margin-top: 5px;">✏️ Edit</button>
+                    <button class="btn-outline" id="edit-desc-btn" style="padding: 4px 10px; font-size: 0.75rem; margin-top: 8px;">✏️ Edit Description</button>
                 </div>
 
                 <div style="background: var(--surface); padding: 10px; border-radius: 8px; margin-bottom: 10px; text-align: left;">🏆 <strong>Total Wins:</strong> <span id="stat-wins">0</span></div>
@@ -147,33 +153,41 @@
         <div id="lobby-screen" class="screen">
             <h2 style="text-align: center; margin-top: 0;">Game Lobby</h2>
             
-            <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+            <div style="display: flex; gap: 10px;">
                 <input type="text" id="player-name" placeholder="Your Name" maxlength="12" style="margin: 0;">
-                <button id="rename-btn" style="white-space: nowrap;">Update Name</button>
+                <button id="rename-btn" style="white-space: nowrap;">Update</button>
             </div>
 
             <div class="card-panel">
                 <h3 style="margin-top:0;">Host a Game</h3>
-                <select id="player-count">
-                    <option value="4">4 Players (Classic)</option>
-                    <option value="6">6 Players (+ DC, Army)</option>
-                </select>
-                <button id="create-btn" style="width: 100%;">Create Room</button>
+                <div style="display: flex; gap: 10px;">
+                    <select id="player-count" style="margin: 0;">
+                        <option value="4">4 Players</option>
+                        <option value="6">6 Players</option>
+                    </select>
+                    <select id="round-count" style="margin: 0;" onchange="toggleCustomRound()">
+                        <option value="10">10 Rounds</option>
+                        <option value="20" selected>20 Rounds</option>
+                        <option value="custom">Custom</option>
+                    </select>
+                </div>
+                <input type="number" id="custom-round-input" placeholder="Enter number of rounds" style="display: none; margin-top: 10px;">
+                <button id="create-btn" style="width: 100%; margin-top: 10px;">Create Room</button>
             </div>
 
-            <div style="text-align: center; margin-bottom: 20px;">
+            <div style="text-align: center;">
                 <span style="color: var(--text-light); font-size: 0.9rem; font-weight: 500;">OR</span>
             </div>
 
             <div class="card-panel" style="margin-bottom: 0;">
                 <h3 style="margin-top:0;">Join a Game</h3>
                 <input type="text" id="room-code-input" placeholder="6-Digit Code" maxlength="6" style="text-transform: uppercase; text-align: center; letter-spacing: 2px;">
-                <button id="join-btn" class="btn-outline" style="width: 100%;">Join / Reconnect</button>
+                <button id="join-btn" class="btn-outline" style="width: 100%;">Join Room</button>
             </div>
 
             <div class="creator-branding">
                 Created by <strong>Abhik Dutta</strong><br>
-                <a href="https://www.ig.com/ab2001k" target="_blank">IG: @ab2001k</a> | 
+                <a href="https://www.instagram.com/ab2001k" target="_blank">IG: @ab2001k</a> | 
                 <a href="https://facebook.com/ab2001k" target="_blank">FB: @ab2001k</a>
             </div>
         </div>
@@ -199,7 +213,7 @@
             <div id="guess-section"></div>
             <div id="card-table"></div>
 
-            <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+            <div style="display:flex; justify-content: space-between; align-items: center;">
                 <h3 style="margin: 0;">Scoreboard</h3>
                 <span id="vote-count-display" style="font-size: 0.8rem; color: var(--accent); font-weight: bold; display: none;">Ending Votes: 0</span>
             </div>
@@ -251,13 +265,18 @@
 
         let roomCode = ""; let roomMaxPlayers = 4; let isHost = false; let myRole = null;
         let playersData = {}; let currentRound = 1; let soundEnabled = true; let dialogueRevealed = false;
+        let gameMaxRounds = 20;
 
         const roleEmojis = { OC: "👨‍⚖️", Daroga: "👮", Police: "🕵️", Chor: "🏃", DC: "🏛️", Army: "🪖" };
         const roles4 = [{name:"OC",pts:2000},{name:"Daroga",pts:1200},{name:"Police",pts:500},{name:"Chor",pts:0}];
         const roles6 = [{name:"DC",pts:2500},{name:"OC",pts:2000},{name:"Army",pts:1500},{name:"Daroga",pts:1200},{name:"Police",pts:500},{name:"Chor",pts:0}];
 
-        // --- Sound System (Includes Daroga Whistle) ---
+        // --- Global Unlock for Audio on First Click ---
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        document.body.addEventListener('click', () => {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+        }, { once: true });
+
         function playSound(type) {
             if(!soundEnabled) return;
             if(audioCtx.state === 'suspended') audioCtx.resume();
@@ -273,7 +292,7 @@
                 osc.type = 'triangle'; osc.frequency.setValueAtTime(800, now);
                 gain.gain.setValueAtTime(0.1, now); gain.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
                 osc.start(now); osc.stop(now + 0.15);
-            } else if (type === 'whistle') { // The Daroga Whistle!
+            } else if (type === 'whistle') { 
                 osc.type = 'sine';
                 osc.frequency.setValueAtTime(1500, now);
                 osc.frequency.linearRampToValueAtTime(2500, now + 0.2);
@@ -281,12 +300,27 @@
                 gain.gain.setValueAtTime(0.15, now);
                 gain.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
                 osc.start(now); osc.stop(now + 0.5);
+            } else if (type === 'win') {
+                osc.type = 'square'; osc.frequency.setValueAtTime(400, now); osc.frequency.setValueAtTime(600, now + 0.1);
+                gain.gain.setValueAtTime(0.05, now); gain.gain.linearRampToValueAtTime(0, now + 0.3);
+                osc.start(now); osc.stop(now + 0.3);
+            } else if (type === 'error') {
+                osc.type = 'sawtooth'; osc.frequency.setValueAtTime(200, now);
+                gain.gain.setValueAtTime(0.1, now); gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+                osc.start(now); osc.stop(now + 0.3);
             }
         }
         document.addEventListener('click', (e) => { if (e.target.tagName === 'BUTTON' || e.target.classList.contains('emoji-btn')) playSound('click'); });
         document.getElementById('sound-toggle').onclick = function() { soundEnabled = !soundEnabled; this.innerText = soundEnabled ? "🔊 Sound: ON" : "🔇 Sound: OFF"; };
 
-        // --- Auth & Profile Logic ---
+        // --- Custom Rounds ---
+        window.toggleCustomRound = function() {
+            const select = document.getElementById('round-count');
+            const customInput = document.getElementById('custom-round-input');
+            customInput.style.display = select.value === 'custom' ? 'block' : 'none';
+        }
+
+        // --- Auth Logic ---
         auth.onAuthStateChanged(user => {
             if (user) {
                 playerId = user.uid; playerName = user.displayName || "Player";
@@ -344,15 +378,19 @@
         const urlParams = new URLSearchParams(window.location.search);
         if (urlParams.get('room')) document.getElementById('room-code-input').value = urlParams.get('room').toUpperCase();
 
-        // --- Create / Join / Mid-Game Join ---
+        // --- Create / Join Game ---
         document.getElementById('create-btn').onclick = () => {
             if (!playerName) return alert("Please set your name!");
             roomMaxPlayers = parseInt(document.getElementById('player-count').value);
+            
+            let rCountVal = document.getElementById('round-count').value;
+            gameMaxRounds = rCountVal === 'custom' ? (parseInt(document.getElementById('custom-round-input').value) || 20) : parseInt(rCountVal);
+            
             roomCode = Math.random().toString(36).substring(2, 8).toUpperCase();
             
-            db.ref(`rooms/${roomCode}/info`).set({ maxPlayers: roomMaxPlayers, hostId: playerId });
+            db.ref(`rooms/${roomCode}/info`).set({ maxPlayers: roomMaxPlayers, maxRounds: gameMaxRounds, hostId: playerId });
             db.ref(`rooms/${roomCode}/gameState`).set({ round: 1, status: 'lobby' });
-            db.ref(`rooms/${roomCode}/players/${playerId}`).set({ name: playerName, score: 0, photo: playerPhoto });
+            db.ref(`rooms/${roomCode}/players/${playerId}`).set({ name: playerName, score: 0, photo: playerPhoto, status: 'online' });
             enterGameScreen();
         };
 
@@ -364,18 +402,15 @@
             db.ref(`rooms/${codeInput}`).once('value', snap => {
                 if (!snap.exists()) return alert("Room not found!");
                 const rData = snap.val();
-                roomCode = codeInput; roomMaxPlayers = rData.info.maxPlayers;
+                roomCode = codeInput; roomMaxPlayers = rData.info.maxPlayers; gameMaxRounds = rData.info.maxRounds || 20;
                 
                 const currPlayers = rData.players ? Object.keys(rData.players).length : 0;
                 
-                // Allow mid-game joining if vacancy exists
                 if (currPlayers < roomMaxPlayers) {
                     if (rData.info.hostId === playerId) {
-                        // Reconnecting Host
-                        db.ref(`rooms/${roomCode}/players/${playerId}`).set({ name: playerName, score: 0, photo: playerPhoto });
+                        db.ref(`rooms/${roomCode}/players/${playerId}`).update({ status: 'online' });
                         enterGameScreen();
                     } else {
-                        // Regular player sending request
                         db.ref(`rooms/${roomCode}/requests/${playerId}`).set({ name: playerName, uid: playerId, photo: playerPhoto });
                         document.getElementById('waiting-overlay').classList.add('active');
                         db.ref(`rooms/${roomCode}/players/${playerId}`).on('value', pSnap => {
@@ -400,21 +435,25 @@
             document.getElementById('display-room-code').innerText = roomCode;
             if(roomMaxPlayers === 6) document.getElementById('card-table').classList.add('six-players');
             window.history.replaceState(null, '', `?room=${roomCode}`);
-            
             document.getElementById('chat-messages').innerHTML = ""; 
             
-            // Auto-remove on disconnect
-            db.ref(`rooms/${roomCode}/players/${playerId}`).onDisconnect().remove();
-            // Remove votes on disconnect
+            // Presence System
+            const myStatusRef = db.ref(`rooms/${roomCode}/players/${playerId}/status`);
+            db.ref('.info/connected').on('value', function(snap) {
+                if (snap.val() === true) {
+                    myStatusRef.onDisconnect().set('offline');
+                    myStatusRef.set('online');
+                }
+            });
+            
             db.ref(`rooms/${roomCode}/endVotes/${playerId}`).onDisconnect().remove();
             
             listenToRoomData();
             setupChatListener();
         }
 
-        // --- Room Listening & Host Migration ---
+        // --- Room Data Listening ---
         function listenToRoomData() {
-            // Host Migration Logic
             db.ref(`rooms/${roomCode}/info/hostId`).on('value', snap => {
                 isHost = (snap.val() === playerId);
                 if(isHost) monitorJoinRequests(); 
@@ -425,19 +464,20 @@
                 const playerIds = Object.keys(playersData);
                 document.getElementById('display-max-players').innerText = `${playerIds.length}/${roomMaxPlayers}`;
                 
-                // If the host left, assign a new host!
                 db.ref(`rooms/${roomCode}/info/hostId`).once('value', hSnap => {
                     if (playerIds.length > 0 && !playerIds.includes(hSnap.val())) {
-                        if (playerIds[0] === playerId) db.ref(`rooms/${roomCode}/info/hostId`).set(playerId); // First player becomes host
+                        if (playerIds[0] === playerId) db.ref(`rooms/${roomCode}/info/hostId`).set(playerId);
                     }
                 });
 
                 const list = document.getElementById('player-list'); list.innerHTML = ""; 
                 playerIds.forEach(id => {
                     let photo = playersData[id].photo || "https://api.dicebear.com/7.x/avataaars/svg?seed="+id;
+                    let dotClass = playersData[id].status === 'online' ? 'status-online' : 'status-offline';
+                    
                     list.innerHTML += `<li style="display:flex; align-items:center; gap:10px;">
                         <img src="${photo}" style="width:25px; height:25px; border-radius:50%; object-fit:cover;">
-                        <span style="flex-grow:1;">${playersData[id].name} ${id===playerId ? "(You)" : ""}</span> 
+                        <span style="flex-grow:1;"><span class="status-dot ${dotClass}"></span> ${playersData[id].name} ${id===playerId ? "(You)" : ""}</span> 
                         <span class="score-pill">${playersData[id].score}</span></li>`;
                 });
 
@@ -451,13 +491,8 @@
             db.ref(`rooms/${roomCode}/gameState/round`).on('value', snap => { if (snap.val()) currentRound = snap.val(); });
             db.ref(`rooms/${roomCode}/dialogue`).on('value', snap => { if (snap.val()) document.getElementById('dialogue-box').innerHTML = snap.val(); });
             db.ref(`rooms/${roomCode}/convPhase`).on('value', snap => handleConversationPhase(snap.val()));
-            
-            // Listen for Card Updates
-            db.ref(`rooms/${roomCode}/cards`).on('value', snap => { 
-                if (snap.val()) renderCards(snap.val()); 
-            });
+            db.ref(`rooms/${roomCode}/cards`).on('value', snap => { if (snap.val()) renderCards(snap.val()); });
 
-            // Listen for End Game Votes
             db.ref(`rooms/${roomCode}/endVotes`).on('value', snap => {
                 const votes = snap.val() || {};
                 const voteCount = Object.keys(votes).length;
@@ -465,9 +500,7 @@
                 if (voteCount > 0) {
                     display.style.display = "block"; display.innerText = `Ending Votes: ${voteCount}/${roomMaxPlayers}`;
                     if (voteCount >= roomMaxPlayers && isHost) triggerEndGame();
-                } else {
-                    display.style.display = "none";
-                }
+                } else display.style.display = "none";
             });
         }
 
@@ -487,7 +520,7 @@
         window.approvePlayer = function(uid, name, photo) {
             db.ref(`rooms/${roomCode}/players`).once('value', snap => {
                 if ((snap.val() ? Object.keys(snap.val()).length : 0) >= roomMaxPlayers) return alert("Room is full!");
-                db.ref(`rooms/${roomCode}/players/${uid}`).set({ name: name, score: 0, photo: photo });
+                db.ref(`rooms/${roomCode}/players/${uid}`).set({ name: name, score: 0, photo: photo, status: 'online' });
                 db.ref(`rooms/${roomCode}/requests/${uid}`).remove();
             });
         };
@@ -503,7 +536,7 @@
             
             db.ref(`rooms/${roomCode}/cards`).set(cardData);
             db.ref(`rooms/${roomCode}/gameState`).update({ status: 'playing' });
-            db.ref(`rooms/${roomCode}/dialogue`).set(`<strong>Round ${currentRound}/20</strong><br/>Pick a card!`);
+            db.ref(`rooms/${roomCode}/dialogue`).set(`<strong>Round ${currentRound}/${gameMaxRounds}</strong><br/>Pick a card!`);
             db.ref(`rooms/${roomCode}/convPhase`).remove(); 
         }
 
@@ -524,21 +557,19 @@
                     const photoSrc = ownerData && ownerData.photo ? ownerData.photo : "https://api.dicebear.com/7.x/avataaars/svg?seed="+cardObj.owner;
                     
                     let roleStr = `${roleEmojis[cardObj.role]} ${cardObj.role}`;
-                    
-                    // Reveal Logic: I see my own role. Others see Daroga/Police ONLY if dialogueRevealed is true.
                     let showRole = (cardObj.owner === playerId) || (dialogueRevealed && (cardObj.role === "Daroga" || cardObj.role === "Police"));
 
                     if (showRole) {
                         if (cardObj.owner === playerId) myRole = cardObj.role;
                         cardEl.innerHTML = `<div class="card-inner-text">
                             <img src="${photoSrc}" class="card-avatar">
-                            <span style="font-size:0.9rem; color:var(--text-main); font-weight:700;">${roleStr}</span>
+                            <span style="font-size:0.85rem; color:var(--text-main); font-weight:700;">${roleStr}</span>
                             <span style="color:var(--primary); font-size: 0.8rem;">${cardObj.points} pts</span>
                         </div>`;
                     } else {
                         cardEl.innerHTML = `<div class="card-inner-text">
                             <img src="${photoSrc}" class="card-avatar">
-                            <span style="font-size:0.9rem; color:var(--text-light)">${ownerName}</span>
+                            <span style="font-size:0.85rem; color:var(--text-light)">${ownerName}</span>
                         </div>`;
                     }
                 } else {
@@ -557,30 +588,29 @@
 
         // --- INTERACTIVE CONVERSATION SYSTEM ---
         function handleConversationPhase(phase) {
-            if (!phase) { document.getElementById('guess-section').style.display = "none"; return; }
-            
             const guessSec = document.getElementById('guess-section');
+            if (!phase) { guessSec.style.display = "none"; return; }
             guessSec.style.display = "block";
 
             if (phase === 'daroga_call') {
                 if (myRole === "Daroga") {
-                    guessSec.innerHTML = `<h3 style="color:var(--accent); margin:0 0 10px 0;">You are Daroga 👮!</h3><button onclick="advanceConv('police_reply', '<strong>👮 ${playerName}:</strong> Police, police koun hai?', true)">Call Out Police</button>`;
+                    guessSec.innerHTML = `<h3 style="color:var(--accent); margin:0 0 10px 0;">You are Daroga 👮!</h3><button onclick="advanceConv('police_reply', '<strong>👮 ${playerName}:</strong> Police, police koun hai?', false, true)">Blow Whistle & Call Out Police</button>`;
                 } else guessSec.innerHTML = `<p style="margin:0;">Waiting for Daroga to speak...</p>`;
             } 
             else if (phase === 'police_reply') {
-                dialogueRevealed = true; // Daroga exposed! Re-render cards.
+                dialogueRevealed = true; 
                 db.ref(`rooms/${roomCode}/cards`).once('value', s=>renderCards(s.val()));
 
                 if (myRole === "Police") {
-                    guessSec.innerHTML = `<h3 style="color:var(--primary); margin:0 0 10px 0;">You are Police 🕵️!</h3><button onclick="advanceConv('daroga_order', '<strong>🕵️ ${playerName}:</strong> Hum hai!')">Reply: Hum hai!</button>`;
+                    guessSec.innerHTML = `<h3 style="color:var(--primary); margin:0 0 10px 0;">You are Police 🕵️!</h3><button onclick="advanceConv('daroga_order', '<strong>🕵️ ${playerName}:</strong> Hum hai!', true, false)">Reply: Hum hai!</button>`;
                 } else guessSec.innerHTML = `<p style="margin:0;">Waiting for Police to reply...</p>`;
             } 
             else if (phase === 'daroga_order') {
-                dialogueRevealed = true; // Police exposed!
+                dialogueRevealed = true; 
                 db.ref(`rooms/${roomCode}/cards`).once('value', s=>renderCards(s.val()));
 
                 if (myRole === "Daroga") {
-                    guessSec.innerHTML = `<button class="danger" onclick="advanceConv('guess_time', '<strong>👮 ${playerName}:</strong> Chor ko pakdo!', false, true)">Blow Whistle & Order Catch!</button>`;
+                    guessSec.innerHTML = `<button class="danger" onclick="advanceConv('guess_time', '<strong>👮 ${playerName}:</strong> Chor ko pakdo!', true, false)">Order Catch!</button>`;
                 } else guessSec.innerHTML = `<p style="margin:0;">Waiting for Daroga's order...</p>`;
             }
             else if (phase === 'guess_time') {
@@ -601,11 +631,20 @@
             
             db.ref(`rooms/${roomCode}/cards`).once('value', snap => {
                 const cards = Object.values(snap.val());
+                const tableNodes = document.getElementById('card-table').children;
+                
                 Object.keys(playersData).forEach(id => {
                     const isDaroga = cards.some(c => c.owner === id && c.role === "Daroga");
                     if (id !== playerId && !isDaroga) {
+                        // Highlight Card
+                        const cIndex = cards.findIndex(c => c.owner === id);
+                        if(cIndex >= 0) tableNodes[cIndex].classList.add('suspect-glow');
+
+                        // Create Button
+                        const pPhoto = playersData[id].photo || "https://api.dicebear.com/7.x/avataaars/svg?seed="+id;
                         const btn = document.createElement('button');
-                        btn.className = "guess-btn"; btn.innerText = playersData[id].name;
+                        btn.className = "guess-btn"; 
+                        btn.innerHTML = `<img src="${pPhoto}" style="width:20px; height:20px; border-radius:50%; vertical-align:middle; margin-right:5px; object-fit:cover;"> ${playersData[id].name}`;
                         btn.onclick = () => makeGuess(id);
                         guessSec.appendChild(btn);
                     }
@@ -615,6 +654,7 @@
 
         function makeGuess(suspectId) {
             document.getElementById('guess-section').style.display = "none";
+            document.querySelectorAll('.suspect-glow').forEach(el => el.classList.remove('suspect-glow'));
             db.ref(`rooms/${roomCode}/convPhase`).remove(); 
             
             db.ref(`rooms/${roomCode}/cards`).once('value', snap => {
@@ -624,7 +664,7 @@
 
                 if (suspectRole === "Chor") {
                     playSound('win');
-                    db.ref(`rooms/${roomCode}/dialogue`).set(`🏆 **${playerName}** caught the Chor! (+500)`);
+                    db.ref(`rooms/${roomCode}/dialogue`).set(`🎉 **${playerName}** caught the Chor! (+500)`);
                     updateScore(playerId, 500); 
                 } else {
                     playSound('error');
@@ -634,17 +674,22 @@
 
                 cards.forEach(c => { if (c.role !== "Police" && c.role !== "Chor" && c.owner) updateScore(c.owner, c.points); });
                 
+                // Show all cards
+                dialogueRevealed = true;
+                db.ref(`rooms/${roomCode}/cards`).once('value', s=>renderCards(s.val()));
+
                 setTimeout(() => {
                     if(isHost) {
-                        if (currentRound >= 20) triggerEndGame();
+                        if (currentRound >= gameMaxRounds) triggerEndGame();
                         else {
                             db.ref(`rooms/${roomCode}/gameState/round`).set(currentRound + 1);
                             db.ref(`rooms/${roomCode}/cards`).remove();
+                            db.ref(`rooms/${roomCode}/dialogue`).set(`Round over! Preparing next round...`);
                             setTimeout(hostDealsCards, 2000); 
                         }
                     }
                     myRole = null;
-                }, 4000);
+                }, 5000);
             });
         }
 
@@ -663,6 +708,7 @@
 
                 db.ref(`rooms/${roomCode}/dialogue`).set(html);
                 db.ref(`rooms/${roomCode}/gameState/status`).set('ended');
+                playSound('win');
                 
                 if (isHost) setTimeout(() => db.ref(`rooms/${roomCode}`).remove(), 20000);
                 setTimeout(() => window.location.reload(), 20000);
@@ -681,15 +727,11 @@
 
         document.getElementById('copy-link-btn').onclick = () => { 
             const link = window.location.origin + window.location.pathname + "?room=" + roomCode;
-            if (navigator.share) {
-                navigator.share({ title: 'Chor Police', text: `Join my Chor Police room! Code: ${roomCode}`, url: link });
-            } else {
-                navigator.clipboard.writeText(link); alert("Link copied!"); 
-            }
+            if (navigator.share) navigator.share({ title: 'Chor Police', text: `Join my room! Code: ${roomCode}`, url: link });
+            else { navigator.clipboard.writeText(link); alert("Link copied!"); }
         };
         
         document.getElementById('exit-btn').onclick = () => { 
-            if(isHost) alert("You are the Admin. A random player will become Admin if you leave.");
             db.ref(`rooms/${roomCode}/players/${playerId}`).remove(); 
             db.ref(`rooms/${roomCode}/endVotes/${playerId}`).remove(); 
             window.location.reload(); 
@@ -710,7 +752,6 @@
             db.ref(`rooms/${roomCode}/chat`).on('child_added', snap => {
                 const msg = snap.val(); const box = document.getElementById('chat-messages');
                 
-                // Floating Emoji Logic
                 const pureEmojis = ['👍', '😂', '😎', '😡', '👮'];
                 if (pureEmojis.includes(msg.text)) {
                     let floatEl = document.createElement('div');
