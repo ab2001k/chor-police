@@ -6,7 +6,6 @@
     <title>Chor Police Multiplayer</title>
     
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2220%22 fill=%22%231E293B%22/><text x=%2250%22 y=%2254%22 font-family=%22Arial%22 font-size=%2250%22 font-weight=%22bold%22 fill=%22white%22 text-anchor=%22middle%22 dominant-baseline=%22middle%22>CP</text></svg>">
-    
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
@@ -21,9 +20,9 @@
             --card-back: linear-gradient(135deg, #1E293B 0%, #0F172A 100%);
         }
 
-        body { font-family: 'Poppins', sans-serif; background: var(--bg-body); color: var(--text-main); margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+        body { font-family: 'Poppins', sans-serif; background: var(--bg-body); color: var(--text-main); margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; overflow: hidden;}
         
-        #game-container { background: var(--bg-app); width: 100%; max-width: 480px; height: 100vh; display: flex; flex-direction: column; overflow: hidden; position: relative; }
+        #game-container { background: var(--bg-app); width: 100%; max-width: 480px; height: 100vh; display: flex; flex-direction: column; position: relative; }
         @media (min-width: 500px) { #game-container { height: 95vh; border-radius: 24px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); } }
 
         header { background: var(--bg-app); padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); }
@@ -46,19 +45,21 @@
         .overlay.active { display: flex; }
         .modal-box { background: white; padding: 30px; border-radius: 20px; width: 100%; max-width: 350px; text-align: center; }
 
-        #room-info { display: flex; flex-direction: column; align-items: center; gap: 10px; background: var(--text-main); color: white; padding: 15px; border-radius: 12px; margin-bottom: 15px; }
+        #room-info { display: flex; flex-direction: column; align-items: center; gap: 8px; background: var(--text-main); color: white; padding: 15px; border-radius: 12px; margin-bottom: 15px; }
         #room-info p { margin: 0; font-weight: 500; }
         #room-info strong { color: #38BDF8; font-size: 1.2rem; }
+        .room-actions { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; width: 100%;}
         
         #host-requests { display: none; background: #FEF3C7; border: 2px solid #F59E0B; padding: 15px; border-radius: 12px; margin-bottom: 15px; }
         .request-item { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; background: white; padding: 8px; border-radius: 8px; font-size: 0.9rem;}
 
         #card-table { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 10px 0; perspective: 1000px; }
         #card-table.six-players { grid-template-columns: 1fr 1fr 1fr; }
-        .card { background: var(--card-back); height: 100px; border-radius: 12px; display: flex; justify-content: center; align-items: center; text-align: center; color: white; font-weight: 600; cursor: pointer; transition: transform 0.4s; user-select: none; border: 2px solid rgba(255,255,255,0.1); transform-style: preserve-3d;}
+        .card { background: var(--card-back); height: 110px; border-radius: 12px; display: flex; justify-content: center; align-items: center; text-align: center; color: white; font-weight: 600; cursor: pointer; transition: transform 0.4s; user-select: none; border: 2px solid rgba(255,255,255,0.1); transform-style: preserve-3d; position: relative;}
         
         .card.flipped { background: white; color: var(--text-main); border: 2px solid var(--primary); transform: rotateY(180deg); }
-        .card-inner-text { transform: rotateY(180deg); width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; } /* Fixes mirror text! */
+        .card-inner-text { transform: rotateY(180deg); width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; } 
+        .card-avatar { width: 30px; height: 30px; border-radius: 50%; border: 2px solid var(--primary); object-fit: cover;}
 
         #dialogue-box { background: #EFF6FF; color: #1E3A8A; padding: 15px; border-radius: 12px; text-align: center; font-weight: 500; border-left: 4px solid var(--primary); margin-bottom: 15px; }
         #guess-section { display: none; background: #FFF1F2; padding: 15px; border-radius: 12px; text-align: center; border: 1px solid #FECDD3; margin-bottom: 15px; }
@@ -68,6 +69,8 @@
         .score-pill { background: var(--text-main); color: white; padding: 2px 10px; border-radius: 20px; font-size: 0.85rem; }
 
         /* Chat & Emoji Bar */
+        #chat-wrapper { transition: 0.3s; }
+        #chat-wrapper.hidden { display: none; }
         #chat-box { background: white; border: 1px solid var(--border-color); border-radius: 12px; display: flex; flex-direction: column; height: 170px; flex-shrink: 0;}
         #emoji-bar { display: flex; justify-content: space-around; background: var(--surface); padding: 8px; border-bottom: 1px solid var(--border-color); font-size: 1.2rem; border-radius: 12px 12px 0 0;}
         .emoji-btn { cursor: pointer; transition: 0.2s; user-select: none; }
@@ -78,14 +81,28 @@
         .chat-controls { display: flex; border-top: 1px solid var(--border-color); }
         #chat-input { border: none; border-radius: 0 0 0 12px; padding: 10px; margin: 0; flex-grow: 1;}
         #send-chat-btn { border-radius: 0 0 12px 0; padding: 0 15px; }
+
+        /* Floating Emoji Animation */
+        .floating-emoji { position: fixed; bottom: 20%; left: 50%; font-size: 4rem; transform: translateX(-50%); animation: floatUp 2s forwards; z-index: 2000; pointer-events: none;}
+        @keyframes floatUp { 0% { bottom: 20%; opacity: 1; transform: translateX(-50%) scale(0.5); } 20% { opacity: 1; transform: translateX(-50%) scale(1.2); } 100% { bottom: 70%; opacity: 0; transform: translateX(-50%) scale(1); } }
+        
+        /* Branding */
+        .creator-branding { text-align: center; margin-top: 20px; font-size: 0.75rem; color: var(--text-light); }
+        .creator-branding a { color: var(--primary); text-decoration: none; font-weight: 600;}
+        
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 10px; }
     </style>
 </head>
 <body>
+    <div id="emoji-layer"></div>
+
     <div id="game-container">
         
         <div id="auth-overlay" class="overlay active">
             <div class="modal-box">
-                <h2 style="margin-top:0; color: var(--text-main);">CP Multiplayer</h2>
+                <h2 style="margin-top:0; color: var(--text-main);">🚓 Chor Police</h2>
                 <p style="color: var(--text-light); margin-bottom: 20px; font-size: 0.9rem;">Sign in to save your Kings & Queens titles!</p>
                 <button id="google-login-btn" style="width: 100%; background: white; color: #333; border: 1px solid #ccc; display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 15px;">
                     Google Login
@@ -106,7 +123,7 @@
 
         <div id="profile-overlay" class="overlay">
             <div class="modal-box">
-                <img id="profile-pic" src="" style="width: 80px; height: 80px; border-radius: 50%; display: none; margin: 0 auto 10px auto; border: 2px solid var(--primary);">
+                <img id="profile-pic" src="" style="width: 80px; height: 80px; border-radius: 50%; display: none; margin: 0 auto 10px auto; border: 2px solid var(--primary); object-fit: cover;">
                 <h2 id="profile-name" style="margin: 0 0 5px 0;">Player</h2>
                 
                 <div style="margin-bottom: 15px;">
@@ -151,17 +168,25 @@
             <div class="card-panel" style="margin-bottom: 0;">
                 <h3 style="margin-top:0;">Join a Game</h3>
                 <input type="text" id="room-code-input" placeholder="6-Digit Code" maxlength="6" style="text-transform: uppercase; text-align: center; letter-spacing: 2px;">
-                <button id="join-btn" class="btn-outline" style="width: 100%;">Request to Join</button>
+                <button id="join-btn" class="btn-outline" style="width: 100%;">Join / Reconnect</button>
+            </div>
+
+            <div class="creator-branding">
+                Created by <strong>Abhik Dutta</strong><br>
+                <a href="https://www.ig.com/ab2001k" target="_blank">IG: @ab2001k</a> | 
+                <a href="https://facebook.com/ab2001k" target="_blank">FB: @ab2001k</a>
             </div>
         </div>
 
         <div id="game-screen" class="screen">
             <div id="room-info">
-                <p>Room Code: <strong id="display-room-code">----</strong></p>
-                <p style="font-size: 0.85rem;">Players in Room: <span id="display-max-players">1/4</span></p>
-                <div style="display: flex; gap: 10px;">
+                <p>Room: <strong id="display-room-code">----</strong></p>
+                <p style="font-size: 0.85rem;">Vacancy: <span id="display-max-players" style="color: #10B981; font-weight: bold;">1/4</span></p>
+                <div class="room-actions">
                     <button id="copy-link-btn" style="background: rgba(255,255,255,0.2); padding: 6px 12px; font-size: 0.8rem;">Share Link</button>
-                    <button id="exit-btn" class="danger" style="padding: 6px 12px; font-size: 0.8rem;">Leave Room</button>
+                    <button id="toggle-chat-btn" class="btn-outline" style="padding: 6px 12px; font-size: 0.8rem; color: white; border-color: rgba(255,255,255,0.3);">💬 Chat</button>
+                    <button id="vote-end-btn" class="danger" style="padding: 6px 12px; font-size: 0.8rem;">Vote End</button>
+                    <button id="exit-btn" class="danger" style="padding: 6px 12px; font-size: 0.8rem; background: #991B1B;">Lobby</button>
                 </div>
             </div>
 
@@ -171,23 +196,29 @@
             </div>
 
             <div id="dialogue-box">Waiting for players...</div>
-            <div id="guess-section"></div> <div id="card-table"></div>
+            <div id="guess-section"></div>
+            <div id="card-table"></div>
 
-            <h3 style="margin: 0 0 10px 0;">Scoreboard</h3>
+            <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                <h3 style="margin: 0;">Scoreboard</h3>
+                <span id="vote-count-display" style="font-size: 0.8rem; color: var(--accent); font-weight: bold; display: none;">Ending Votes: 0</span>
+            </div>
             <ul id="player-list"></ul>
 
-            <div id="chat-box">
-                <div id="emoji-bar">
-                    <span class="emoji-btn" onclick="sendQuickEmoji('👍')">👍</span>
-                    <span class="emoji-btn" onclick="sendQuickEmoji('😂')">😂</span>
-                    <span class="emoji-btn" onclick="sendQuickEmoji('😎')">😎</span>
-                    <span class="emoji-btn" onclick="sendQuickEmoji('😡')">😡</span>
-                    <span class="emoji-btn" onclick="sendQuickEmoji('👮')">👮</span>
-                </div>
-                <div id="chat-messages"></div>
-                <div class="chat-controls">
-                    <input type="text" id="chat-input" placeholder="Message...">
-                    <button id="send-chat-btn">Send</button>
+            <div id="chat-wrapper">
+                <div id="chat-box">
+                    <div id="emoji-bar">
+                        <span class="emoji-btn" onclick="sendQuickEmoji('👍')">👍</span>
+                        <span class="emoji-btn" onclick="sendQuickEmoji('😂')">😂</span>
+                        <span class="emoji-btn" onclick="sendQuickEmoji('😎')">😎</span>
+                        <span class="emoji-btn" onclick="sendQuickEmoji('😡')">😡</span>
+                        <span class="emoji-btn" onclick="sendQuickEmoji('👮')">👮</span>
+                    </div>
+                    <div id="chat-messages"></div>
+                    <div class="chat-controls">
+                        <input type="text" id="chat-input" placeholder="Message...">
+                        <button id="send-chat-btn">Send</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -211,20 +242,21 @@
         // --- Core Variables ---
         let playerName = localStorage.getItem('cp_playerName') || "";
         let playerId = localStorage.getItem('cp_playerId') || "user_" + Math.random().toString(36).substr(2, 9);
+        let playerPhoto = localStorage.getItem('cp_photo') || "https://api.dicebear.com/7.x/avataaars/svg?seed=" + playerId;
         localStorage.setItem('cp_playerId', playerId);
 
-        // Profile Description Generation
         const defaultDescs = ["Sneaky Thief 🥷", "Master Detective 🕵️", "Always Daroga 👮", "Just chilling 😎"];
         let playerDesc = localStorage.getItem('cp_desc') || defaultDescs[Math.floor(Math.random() * defaultDescs.length)];
         localStorage.setItem('cp_desc', playerDesc);
 
         let roomCode = ""; let roomMaxPlayers = 4; let isHost = false; let myRole = null;
-        let playersData = {}; let currentRound = 1; let soundEnabled = true;
+        let playersData = {}; let currentRound = 1; let soundEnabled = true; let dialogueRevealed = false;
 
+        const roleEmojis = { OC: "👨‍⚖️", Daroga: "👮", Police: "🕵️", Chor: "🏃", DC: "🏛️", Army: "🪖" };
         const roles4 = [{name:"OC",pts:2000},{name:"Daroga",pts:1200},{name:"Police",pts:500},{name:"Chor",pts:0}];
         const roles6 = [{name:"DC",pts:2500},{name:"OC",pts:2000},{name:"Army",pts:1500},{name:"Daroga",pts:1200},{name:"Police",pts:500},{name:"Chor",pts:0}];
 
-        // --- Sound Synthesizer ---
+        // --- Sound System (Includes Daroga Whistle) ---
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         function playSound(type) {
             if(!soundEnabled) return;
@@ -232,6 +264,7 @@
             const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
             osc.connect(gain); gain.connect(audioCtx.destination);
             let now = audioCtx.currentTime;
+            
             if(type === 'click') {
                 osc.type = 'sine'; osc.frequency.setValueAtTime(600, now);
                 gain.gain.setValueAtTime(0.1, now); gain.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
@@ -240,44 +273,44 @@
                 osc.type = 'triangle'; osc.frequency.setValueAtTime(800, now);
                 gain.gain.setValueAtTime(0.1, now); gain.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
                 osc.start(now); osc.stop(now + 0.15);
+            } else if (type === 'whistle') { // The Daroga Whistle!
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(1500, now);
+                osc.frequency.linearRampToValueAtTime(2500, now + 0.2);
+                osc.frequency.linearRampToValueAtTime(2000, now + 0.4);
+                gain.gain.setValueAtTime(0.15, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
+                osc.start(now); osc.stop(now + 0.5);
             }
         }
         document.addEventListener('click', (e) => { if (e.target.tagName === 'BUTTON' || e.target.classList.contains('emoji-btn')) playSound('click'); });
-        
-        document.getElementById('sound-toggle').onclick = function() {
-            soundEnabled = !soundEnabled; this.innerText = soundEnabled ? "🔊 Sound: ON" : "🔇 Sound: OFF";
-        };
+        document.getElementById('sound-toggle').onclick = function() { soundEnabled = !soundEnabled; this.innerText = soundEnabled ? "🔊 Sound: ON" : "🔇 Sound: OFF"; };
 
         // --- Auth & Profile Logic ---
         auth.onAuthStateChanged(user => {
             if (user) {
                 playerId = user.uid; playerName = user.displayName || "Player";
-                db.ref(`users/${playerId}/profile`).update({ name: playerName, photo: user.photoURL });
-                finishAuth(user.photoURL);
-            } else if (playerName) {
-                finishAuth(); // Guest
-            }
+                playerPhoto = user.photoURL || playerPhoto;
+                localStorage.setItem('cp_photo', playerPhoto);
+                db.ref(`users/${playerId}/profile`).update({ name: playerName, photo: playerPhoto });
+                finishAuth();
+            } else if (playerName) finishAuth(); 
         });
 
         document.getElementById('google-login-btn').onclick = () => auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()).catch(e => alert("Login Failed."));
-        
         document.getElementById('guest-login-btn').onclick = () => {
             const guestInput = document.getElementById('guest-name-input').value.trim();
             playerName = guestInput || "Guest_" + Math.floor(Math.random()*1000);
-            localStorage.setItem('cp_playerName', playerName);
-            finishAuth();
+            localStorage.setItem('cp_playerName', playerName); finishAuth();
         };
+        document.getElementById('logout-btn').onclick = () => auth.signOut().then(() => { localStorage.clear(); window.location.reload(); });
 
-        document.getElementById('logout-btn').onclick = () => auth.signOut().then(() => { localStorage.removeItem('cp_playerName'); window.location.reload(); });
-
-        function finishAuth(photoURL = "") {
+        function finishAuth() {
             document.getElementById('auth-overlay').classList.remove('active');
             document.getElementById('lobby-screen').classList.add('active');
             document.getElementById('player-name').value = playerName;
-            if(photoURL) {
-                document.getElementById('profile-pic').src = photoURL;
-                document.getElementById('profile-pic').style.display = "block";
-            }
+            document.getElementById('profile-pic').src = playerPhoto;
+            document.getElementById('profile-pic').style.display = "block";
         }
 
         document.getElementById('profile-btn').onclick = () => {
@@ -294,11 +327,10 @@
         document.getElementById('edit-desc-btn').onclick = () => {
             let newDesc = prompt("Enter your profile description:", playerDesc);
             if(newDesc && newDesc.trim()) {
-                playerDesc = newDesc.trim();
-                localStorage.setItem('cp_desc', playerDesc);
+                playerDesc = newDesc.trim(); localStorage.setItem('cp_desc', playerDesc);
                 document.getElementById('profile-desc').innerText = `"${playerDesc}"`;
             }
-        }
+        };
 
         document.getElementById('rename-btn').onclick = () => {
             const newName = document.getElementById('player-name').value.trim();
@@ -309,12 +341,10 @@
             }
         };
 
-        // Auto-fill Room Code if URL has it
         const urlParams = new URLSearchParams(window.location.search);
-        const urlRoom = urlParams.get('room');
-        if (urlRoom) document.getElementById('room-code-input').value = urlRoom.toUpperCase();
+        if (urlParams.get('room')) document.getElementById('room-code-input').value = urlParams.get('room').toUpperCase();
 
-        // --- Create / Join Room ---
+        // --- Create / Join / Mid-Game Join ---
         document.getElementById('create-btn').onclick = () => {
             if (!playerName) return alert("Please set your name!");
             roomMaxPlayers = parseInt(document.getElementById('player-count').value);
@@ -322,7 +352,7 @@
             
             db.ref(`rooms/${roomCode}/info`).set({ maxPlayers: roomMaxPlayers, hostId: playerId });
             db.ref(`rooms/${roomCode}/gameState`).set({ round: 1, status: 'lobby' });
-            db.ref(`rooms/${roomCode}/players/${playerId}`).set({ name: playerName, score: 0 });
+            db.ref(`rooms/${roomCode}/players/${playerId}`).set({ name: playerName, score: 0, photo: playerPhoto });
             enterGameScreen();
         };
 
@@ -331,27 +361,38 @@
             const codeInput = document.getElementById('room-code-input').value.trim().toUpperCase();
             if (codeInput.length !== 6) return alert("Enter a valid 6-digit code.");
             
-            db.ref(`rooms/${codeInput}/info`).once('value', snap => {
+            db.ref(`rooms/${codeInput}`).once('value', snap => {
                 if (!snap.exists()) return alert("Room not found!");
-                roomCode = codeInput; roomMaxPlayers = snap.val().maxPlayers;
+                const rData = snap.val();
+                roomCode = codeInput; roomMaxPlayers = rData.info.maxPlayers;
                 
-                db.ref(`rooms/${roomCode}/requests/${playerId}`).set({ name: playerName, uid: playerId });
-                document.getElementById('waiting-overlay').classList.add('active');
+                const currPlayers = rData.players ? Object.keys(rData.players).length : 0;
                 
-                db.ref(`rooms/${roomCode}/players/${playerId}`).on('value', pSnap => {
-                    if (pSnap.exists()) {
-                        document.getElementById('waiting-overlay').classList.remove('active');
-                        db.ref(`rooms/${roomCode}/players/${playerId}`).off(); 
+                // Allow mid-game joining if vacancy exists
+                if (currPlayers < roomMaxPlayers) {
+                    if (rData.info.hostId === playerId) {
+                        // Reconnecting Host
+                        db.ref(`rooms/${roomCode}/players/${playerId}`).set({ name: playerName, score: 0, photo: playerPhoto });
                         enterGameScreen();
+                    } else {
+                        // Regular player sending request
+                        db.ref(`rooms/${roomCode}/requests/${playerId}`).set({ name: playerName, uid: playerId, photo: playerPhoto });
+                        document.getElementById('waiting-overlay').classList.add('active');
+                        db.ref(`rooms/${roomCode}/players/${playerId}`).on('value', pSnap => {
+                            if (pSnap.exists()) {
+                                document.getElementById('waiting-overlay').classList.remove('active');
+                                db.ref(`rooms/${roomCode}/players/${playerId}`).off(); 
+                                enterGameScreen();
+                            }
+                        });
                     }
-                });
+                } else {
+                    alert("Room is full!");
+                }
             });
         };
 
-        function cancelJoinRequest() {
-            db.ref(`rooms/${roomCode}/requests/${playerId}`).remove();
-            document.getElementById('waiting-overlay').classList.remove('active');
-        }
+        function cancelJoinRequest() { db.ref(`rooms/${roomCode}/requests/${playerId}`).remove(); document.getElementById('waiting-overlay').classList.remove('active'); }
 
         function enterGameScreen() {
             document.getElementById('lobby-screen').classList.remove('active');
@@ -361,13 +402,19 @@
             window.history.replaceState(null, '', `?room=${roomCode}`);
             
             document.getElementById('chat-messages').innerHTML = ""; 
+            
+            // Auto-remove on disconnect
             db.ref(`rooms/${roomCode}/players/${playerId}`).onDisconnect().remove();
+            // Remove votes on disconnect
+            db.ref(`rooms/${roomCode}/endVotes/${playerId}`).onDisconnect().remove();
+            
             listenToRoomData();
             setupChatListener();
         }
 
-        // --- Room Listening & Host Requests ---
+        // --- Room Listening & Host Migration ---
         function listenToRoomData() {
+            // Host Migration Logic
             db.ref(`rooms/${roomCode}/info/hostId`).on('value', snap => {
                 isHost = (snap.val() === playerId);
                 if(isHost) monitorJoinRequests(); 
@@ -376,14 +423,22 @@
             db.ref(`rooms/${roomCode}/players`).on('value', snap => {
                 playersData = snap.val() || {};
                 const playerIds = Object.keys(playersData);
-                
-                // Realtime Vacancy Display
                 document.getElementById('display-max-players').innerText = `${playerIds.length}/${roomMaxPlayers}`;
                 
-                const list = document.getElementById('player-list');
-                list.innerHTML = ""; 
+                // If the host left, assign a new host!
+                db.ref(`rooms/${roomCode}/info/hostId`).once('value', hSnap => {
+                    if (playerIds.length > 0 && !playerIds.includes(hSnap.val())) {
+                        if (playerIds[0] === playerId) db.ref(`rooms/${roomCode}/info/hostId`).set(playerId); // First player becomes host
+                    }
+                });
+
+                const list = document.getElementById('player-list'); list.innerHTML = ""; 
                 playerIds.forEach(id => {
-                    list.innerHTML += `<li><span>👤 ${playersData[id].name} ${id===playerId ? "(You)" : ""}</span> <span class="score-pill">${playersData[id].score}</span></li>`;
+                    let photo = playersData[id].photo || "https://api.dicebear.com/7.x/avataaars/svg?seed="+id;
+                    list.innerHTML += `<li style="display:flex; align-items:center; gap:10px;">
+                        <img src="${photo}" style="width:25px; height:25px; border-radius:50%; object-fit:cover;">
+                        <span style="flex-grow:1;">${playersData[id].name} ${id===playerId ? "(You)" : ""}</span> 
+                        <span class="score-pill">${playersData[id].score}</span></li>`;
                 });
 
                 if (playerIds.length === roomMaxPlayers && isHost) {
@@ -394,11 +449,26 @@
             });
 
             db.ref(`rooms/${roomCode}/gameState/round`).on('value', snap => { if (snap.val()) currentRound = snap.val(); });
-            db.ref(`rooms/${roomCode}/cards`).on('value', snap => { if (snap.val()) renderCards(snap.val()); });
             db.ref(`rooms/${roomCode}/dialogue`).on('value', snap => { if (snap.val()) document.getElementById('dialogue-box').innerHTML = snap.val(); });
-            
-            // Listen for Interactive Conversation Phase
             db.ref(`rooms/${roomCode}/convPhase`).on('value', snap => handleConversationPhase(snap.val()));
+            
+            // Listen for Card Updates
+            db.ref(`rooms/${roomCode}/cards`).on('value', snap => { 
+                if (snap.val()) renderCards(snap.val()); 
+            });
+
+            // Listen for End Game Votes
+            db.ref(`rooms/${roomCode}/endVotes`).on('value', snap => {
+                const votes = snap.val() || {};
+                const voteCount = Object.keys(votes).length;
+                const display = document.getElementById('vote-count-display');
+                if (voteCount > 0) {
+                    display.style.display = "block"; display.innerText = `Ending Votes: ${voteCount}/${roomMaxPlayers}`;
+                    if (voteCount >= roomMaxPlayers && isHost) triggerEndGame();
+                } else {
+                    display.style.display = "none";
+                }
+            });
         }
 
         function monitorJoinRequests() {
@@ -408,16 +478,16 @@
                 if(Object.keys(reqs).length > 0) {
                     reqDiv.style.display = "block";
                     Object.values(reqs).forEach(req => {
-                        reqList.innerHTML += `<div class="request-item"><span><strong>${req.name}</strong></span> <div><button onclick="approvePlayer('${req.uid}', '${req.name}')" style="background:#10B981; padding:4px 8px;">Accept</button> <button onclick="rejectPlayer('${req.uid}')" class="danger" style="padding:4px 8px;">Reject</button></div></div>`;
+                        reqList.innerHTML += `<div class="request-item"><span><strong>${req.name}</strong></span> <div><button onclick="approvePlayer('${req.uid}', '${req.name}', '${req.photo}')" style="background:#10B981; padding:4px 8px;">Accept</button> <button onclick="rejectPlayer('${req.uid}')" class="danger" style="padding:4px 8px;">Reject</button></div></div>`;
                     });
                 } else reqDiv.style.display = "none";
             });
         }
 
-        window.approvePlayer = function(uid, name) {
+        window.approvePlayer = function(uid, name, photo) {
             db.ref(`rooms/${roomCode}/players`).once('value', snap => {
                 if ((snap.val() ? Object.keys(snap.val()).length : 0) >= roomMaxPlayers) return alert("Room is full!");
-                db.ref(`rooms/${roomCode}/players/${uid}`).set({ name: name, score: 0 });
+                db.ref(`rooms/${roomCode}/players/${uid}`).set({ name: name, score: 0, photo: photo });
                 db.ref(`rooms/${roomCode}/requests/${uid}`).remove();
             });
         };
@@ -425,6 +495,7 @@
 
         // --- Core Gameplay ---
         function hostDealsCards() {
+            dialogueRevealed = false;
             const activeRoles = roomMaxPlayers === 6 ? roles6 : roles4;
             const shuffled = [...activeRoles].sort(() => Math.random() - 0.5);
             const cardData = {};
@@ -433,7 +504,7 @@
             db.ref(`rooms/${roomCode}/cards`).set(cardData);
             db.ref(`rooms/${roomCode}/gameState`).update({ status: 'playing' });
             db.ref(`rooms/${roomCode}/dialogue`).set(`<strong>Round ${currentRound}/20</strong><br/>Pick a card!`);
-            db.ref(`rooms/${roomCode}/convPhase`).remove(); // Reset conversation
+            db.ref(`rooms/${roomCode}/convPhase`).remove(); 
         }
 
         function renderCards(cards) {
@@ -448,14 +519,27 @@
 
                 if (cardObj.owner) {
                     claimedCount++; cardEl.classList.add('flipped');
-                    const ownerName = playersData[cardObj.owner] ? playersData[cardObj.owner].name : "Player";
+                    const ownerData = playersData[cardObj.owner];
+                    const ownerName = ownerData ? ownerData.name : "Player";
+                    const photoSrc = ownerData && ownerData.photo ? ownerData.photo : "https://api.dicebear.com/7.x/avataaars/svg?seed="+cardObj.owner;
                     
-                    if (cardObj.owner === playerId) {
-                        myRole = cardObj.role;
-                        // FIX: Added card-inner-text wrapper to fix mirror text!
-                        cardEl.innerHTML = `<div class="card-inner-text"><span style="font-size:0.8rem; color:var(--text-light)">You</span><br/>${cardObj.role}<br/><span style="color:var(--primary)">${cardObj.points}</span></div>`;
+                    let roleStr = `${roleEmojis[cardObj.role]} ${cardObj.role}`;
+                    
+                    // Reveal Logic: I see my own role. Others see Daroga/Police ONLY if dialogueRevealed is true.
+                    let showRole = (cardObj.owner === playerId) || (dialogueRevealed && (cardObj.role === "Daroga" || cardObj.role === "Police"));
+
+                    if (showRole) {
+                        if (cardObj.owner === playerId) myRole = cardObj.role;
+                        cardEl.innerHTML = `<div class="card-inner-text">
+                            <img src="${photoSrc}" class="card-avatar">
+                            <span style="font-size:0.9rem; color:var(--text-main); font-weight:700;">${roleStr}</span>
+                            <span style="color:var(--primary); font-size: 0.8rem;">${cardObj.points} pts</span>
+                        </div>`;
                     } else {
-                        cardEl.innerHTML = `<div class="card-inner-text"><span style="font-size:0.9rem; color:var(--text-light)">Picked by<br/>${ownerName}</span></div>`;
+                        cardEl.innerHTML = `<div class="card-inner-text">
+                            <img src="${photoSrc}" class="card-avatar">
+                            <span style="font-size:0.9rem; color:var(--text-light)">${ownerName}</span>
+                        </div>`;
                     }
                 } else {
                     cardEl.innerText = "Select";
@@ -464,7 +548,6 @@
                 table.appendChild(cardEl);
             });
 
-            // When everyone picks, Host triggers the Conversation Phase!
             if (claimedCount === roomMaxPlayers && isHost) {
                 db.ref(`rooms/${roomCode}/convPhase`).once('value', snap => {
                     if(!snap.exists()) db.ref(`rooms/${roomCode}/convPhase`).set('daroga_call');
@@ -481,40 +564,40 @@
 
             if (phase === 'daroga_call') {
                 if (myRole === "Daroga") {
-                    guessSec.innerHTML = `<h3 style="color:var(--accent)">You are Daroga!</h3><button onclick="advanceConv('police_reply', '<strong>${playerName} (Daroga):</strong> Police, police koun hai?')">Call: Police, police koun hai?</button>`;
-                } else {
-                    guessSec.innerHTML = `<p>Waiting for Daroga to speak...</p>`;
-                }
+                    guessSec.innerHTML = `<h3 style="color:var(--accent); margin:0 0 10px 0;">You are Daroga 👮!</h3><button onclick="advanceConv('police_reply', '<strong>👮 ${playerName}:</strong> Police, police koun hai?', true)">Call Out Police</button>`;
+                } else guessSec.innerHTML = `<p style="margin:0;">Waiting for Daroga to speak...</p>`;
             } 
             else if (phase === 'police_reply') {
+                dialogueRevealed = true; // Daroga exposed! Re-render cards.
+                db.ref(`rooms/${roomCode}/cards`).once('value', s=>renderCards(s.val()));
+
                 if (myRole === "Police") {
-                    guessSec.innerHTML = `<h3 style="color:var(--primary)">You are Police!</h3><button onclick="advanceConv('daroga_order', '<strong>${playerName} (Police):</strong> Hum hai!')">Reply: Hum hai!</button>`;
-                } else {
-                    guessSec.innerHTML = `<p>Waiting for Police to reply...</p>`;
-                }
+                    guessSec.innerHTML = `<h3 style="color:var(--primary); margin:0 0 10px 0;">You are Police 🕵️!</h3><button onclick="advanceConv('daroga_order', '<strong>🕵️ ${playerName}:</strong> Hum hai!')">Reply: Hum hai!</button>`;
+                } else guessSec.innerHTML = `<p style="margin:0;">Waiting for Police to reply...</p>`;
             } 
             else if (phase === 'daroga_order') {
+                dialogueRevealed = true; // Police exposed!
+                db.ref(`rooms/${roomCode}/cards`).once('value', s=>renderCards(s.val()));
+
                 if (myRole === "Daroga") {
-                    guessSec.innerHTML = `<button class="danger" onclick="advanceConv('guess_time', '<strong>${playerName} (Daroga):</strong> Chor ko pakdo!')">Order: Chor ko pakdo!</button>`;
-                } else {
-                    guessSec.innerHTML = `<p>Waiting for Daroga's order...</p>`;
-                }
+                    guessSec.innerHTML = `<button class="danger" onclick="advanceConv('guess_time', '<strong>👮 ${playerName}:</strong> Chor ko pakdo!', false, true)">Blow Whistle & Order Catch!</button>`;
+                } else guessSec.innerHTML = `<p style="margin:0;">Waiting for Daroga's order...</p>`;
             }
             else if (phase === 'guess_time') {
                 if (myRole === "Police") activatePoliceGuessing();
-                else guessSec.innerHTML = `<p>Police is searching for the Chor...</p>`;
+                else guessSec.innerHTML = `<p style="margin:0;">Police 🕵️ is searching for the Chor...</p>`;
             }
         }
 
-        window.advanceConv = function(nextPhase, dialogueText) {
+        window.advanceConv = function(nextPhase, dialogueText, playClick=false, playWhist=false) {
+            if(playWhist) playSound('whistle');
             db.ref(`rooms/${roomCode}/dialogue`).set(dialogueText);
             db.ref(`rooms/${roomCode}/convPhase`).set(nextPhase);
         };
 
-        // --- Guessing ---
         function activatePoliceGuessing() {
             const guessSec = document.getElementById('guess-section');
-            guessSec.innerHTML = "<h3 style='margin:0 0 10px 0; color:var(--accent)'>Who is Chor?</h3>";
+            guessSec.innerHTML = "<h3 style='margin:0 0 10px 0; color:var(--accent)'>Who is Chor 🏃?</h3>";
             
             db.ref(`rooms/${roomCode}/cards`).once('value', snap => {
                 const cards = Object.values(snap.val());
@@ -532,7 +615,7 @@
 
         function makeGuess(suspectId) {
             document.getElementById('guess-section').style.display = "none";
-            db.ref(`rooms/${roomCode}/convPhase`).remove(); // Clear conversation
+            db.ref(`rooms/${roomCode}/convPhase`).remove(); 
             
             db.ref(`rooms/${roomCode}/cards`).once('value', snap => {
                 const cards = Object.values(snap.val());
@@ -572,7 +655,7 @@
                 const titles = ["👑 KING", "👸 QUEEN", "🛡️ MINISTER", "💂 SENAPATI", "🏃 CHOR", "🕵️ PRISONER"];
                 
                 let html = "<h2 style='color:#E11D48; margin:0'>🎉 GAME OVER 🎉</h2>";
-                sorted.forEach((player, i) => { html += `<p><strong>${titles[i]||"CITIZEN"}</strong>: ${player.name} (${player.score})</p>`; });
+                sorted.forEach((player, i) => { html += `<p style="margin:4px"><strong>${titles[i]||"CITIZEN"}</strong>: ${player.name} (${player.score})</p>`; });
                 
                 const winnerId = sorted[0].id;
                 db.ref(`users/${winnerId}/stats/wins`).once('value', s => db.ref(`users/${winnerId}/stats/wins`).set((s.val()||0)+1));
@@ -581,28 +664,41 @@
                 db.ref(`rooms/${roomCode}/dialogue`).set(html);
                 db.ref(`rooms/${roomCode}/gameState/status`).set('ended');
                 
-                // Room Auto-Destruction After 15 Seconds
-                if (isHost) setTimeout(() => db.ref(`rooms/${roomCode}`).remove(), 15000);
-                setTimeout(() => window.location.reload(), 16000);
+                if (isHost) setTimeout(() => db.ref(`rooms/${roomCode}`).remove(), 20000);
+                setTimeout(() => window.location.reload(), 20000);
             });
         }
 
         function updateScore(id, pts) { db.ref(`rooms/${roomCode}/players/${id}/score`).once('value', s => db.ref(`rooms/${roomCode}/players/${id}/score`).set((s.val()||0)+pts)); }
         
-        // Native Share Implementation
-        document.getElementById('copy-link-btn').onclick = () => { 
-            if (navigator.share) {
-                navigator.share({ title: 'Chor Police', text: 'Join my room!', url: window.location.href });
-            } else {
-                navigator.clipboard.writeText(window.location.href); alert("Link copied!"); 
-            }
-        }
-        
-        document.getElementById('exit-btn').onclick = () => { db.ref(`rooms/${roomCode}/players/${playerId}`).remove(); window.location.href = window.location.pathname; }
+        // --- Controls (Vote End, Exit, Share) ---
+        document.getElementById('vote-end-btn').onclick = () => {
+            db.ref(`rooms/${roomCode}/endVotes/${playerId}`).set(true);
+            db.ref(`rooms/${roomCode}/chat`).push({ sender: "System", text: `${playerName} voted to end the game early.` });
+        };
 
-        // Chat & Emojis
+        document.getElementById('toggle-chat-btn').onclick = () => document.getElementById('chat-wrapper').classList.toggle('hidden');
+
+        document.getElementById('copy-link-btn').onclick = () => { 
+            const link = window.location.origin + window.location.pathname + "?room=" + roomCode;
+            if (navigator.share) {
+                navigator.share({ title: 'Chor Police', text: `Join my Chor Police room! Code: ${roomCode}`, url: link });
+            } else {
+                navigator.clipboard.writeText(link); alert("Link copied!"); 
+            }
+        };
+        
+        document.getElementById('exit-btn').onclick = () => { 
+            if(isHost) alert("You are the Admin. A random player will become Admin if you leave.");
+            db.ref(`rooms/${roomCode}/players/${playerId}`).remove(); 
+            db.ref(`rooms/${roomCode}/endVotes/${playerId}`).remove(); 
+            window.location.reload(); 
+        };
+
+        // --- Chat & Floating Emojis ---
         const chatInput = document.getElementById('chat-input');
         window.sendQuickEmoji = function(emoji) { db.ref(`rooms/${roomCode}/chat`).push({ sender: playerName, text: emoji }); }
+        
         function sendChat() {
             const text = chatInput.value.trim();
             if (text && playerName) { db.ref(`rooms/${roomCode}/chat`).push({ sender: playerName, text: text }); chatInput.value = ""; }
@@ -613,6 +709,16 @@
         function setupChatListener() {
             db.ref(`rooms/${roomCode}/chat`).on('child_added', snap => {
                 const msg = snap.val(); const box = document.getElementById('chat-messages');
+                
+                // Floating Emoji Logic
+                const pureEmojis = ['👍', '😂', '😎', '😡', '👮'];
+                if (pureEmojis.includes(msg.text)) {
+                    let floatEl = document.createElement('div');
+                    floatEl.className = 'floating-emoji'; floatEl.innerText = msg.text;
+                    document.getElementById('emoji-layer').appendChild(floatEl);
+                    setTimeout(() => floatEl.remove(), 2000);
+                }
+
                 let mClass = msg.sender === "System" ? "style='background: #FFF1F2; color: #E11D48; margin: 5px auto; text-align: center; width: 90%;'" : "";
                 box.innerHTML += `<div class="chat-msg" ${mClass}><strong>${msg.sender}:</strong> ${msg.text}</div>`;
                 box.scrollTop = box.scrollHeight;
