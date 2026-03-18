@@ -58,15 +58,30 @@
         
         .card { background: var(--card-back); height: 110px; border-radius: 12px; display: flex; justify-content: center; align-items: center; text-align: center; color: white; font-weight: 600; cursor: pointer; transition: transform 0.4s, box-shadow 0.3s, border-color 0.3s; user-select: none; border: 2px solid rgba(255,255,255,0.1); transform-style: preserve-3d; position: relative;}
         .card.flipped { background: white; color: var(--text-main); border: 2px solid var(--primary); transform: rotateY(180deg); }
-        
-        /* OWN CARD STYLING */
         .card.my-card { border: 3px solid #F59E0B !important; box-shadow: 0 0 15px rgba(245, 158, 11, 0.4) !important; z-index: 5;}
-        
-        /* SUSPECT GLOW */
         .card.suspect-glow { box-shadow: 0 0 15px 4px rgba(225, 29, 72, 0.7) !important; border-color: var(--accent) !important; animation: pulseGlow 1.5s infinite; cursor: pointer !important; z-index: 10;}
+        
         @keyframes pulseGlow { 0% { box-shadow: 0 0 10px 2px rgba(225, 29, 72, 0.5); } 50% { box-shadow: 0 0 20px 6px rgba(225, 29, 72, 0.8); } 100% { box-shadow: 0 0 10px 2px rgba(225, 29, 72, 0.5); } }
 
-        /* ATTENTION ANIMATION */
+        /* Reshuffle Deal Animation */
+        @keyframes dealCards { 0% { transform: translateY(-50px) scale(0.5); opacity: 0; } 100% { transform: translateY(0) scale(1); opacity: 1; } }
+        .deal-anim { animation: dealCards 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; opacity: 0; }
+
+        /* Guess Animations (Wrong & Correct) */
+        @keyframes guessWrong {
+            0%, 100% { transform: translateX(0) rotateY(180deg); }
+            20%, 60% { transform: translateX(-10px) rotateY(180deg); }
+            40%, 80% { transform: translateX(10px) rotateY(180deg); }
+        }
+        .card.guess-wrong { animation: guessWrong 0.5s ease forwards; border-color: var(--accent) !important; box-shadow: 0 0 15px 4px rgba(225, 29, 72, 0.7) !important; z-index: 10; }
+        
+        @keyframes guessCorrect {
+            0%, 100% { transform: scale(1) rotateY(180deg); }
+            50% { transform: scale(1.1) rotateY(180deg); box-shadow: 0 0 25px 8px rgba(16, 185, 129, 0.9); }
+        }
+        .card.guess-correct { animation: guessCorrect 0.6s ease forwards; border-color: #10B981 !important; box-shadow: 0 0 15px 4px rgba(16, 185, 129, 0.7) !important; z-index: 10; }
+
+        /* Buttons Animation */
         @keyframes pulseAttention { 0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7); } 50% { transform: scale(1.05); box-shadow: 0 0 15px 5px rgba(59, 130, 246, 0.4); } 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); } }
         .attention-btn { animation: pulseAttention 1.5s infinite; }
         .attention-btn.danger { animation: pulseAttentionDanger 1.5s infinite; }
@@ -152,13 +167,13 @@
             <div class="modal-box" style="text-align: left;">
                 <h2 style="margin-top:0; color: var(--text-main); text-align: center;">How to Play 📖</h2>
                 <ul style="padding-left: 20px; font-size: 0.9rem; color: var(--text-light); line-height: 1.6;">
-                    <li><strong>Objective:</strong> Get the highest score to be crowned KING 👑!</li>
+                    <li><strong>Objective:</strong> Get highest score to be KING 👑!</li>
                     <li>Cards flip over quickly. Tap a card fast to claim your role.</li>
-                    <li><strong>Daroga (1200 pts)</strong> blows the whistle to call the Police.</li>
-                    <li><strong>Police (500 pts)</strong> must reply and guess who the Chor is!</li>
+                    <li><strong>Daroga (1200 pts)</strong> blows whistle to call Police.</li>
+                    <li><strong>Police (500 pts)</strong> must reply and guess who Chor is!</li>
                     <li><strong>Chor (0 pts)</strong> tries to hide. If Police guesses wrong, Chor steals 500 pts!</li>
                     <li><strong>OC (2000), DC (2500), Army (1500)</strong> get free points.</li>
-                    <li><strong>Single Player?</strong> The Host can tap "🤖 Add Bot" to play against smart bots!</li>
+                    <li><strong>Single Player?</strong> Host can tap "🤖 Add Bot" to play against smart bots!</li>
                 </ul>
                 <button class="btn-outline" onclick="document.getElementById('rules-overlay').classList.remove('active')" style="width: 100%; margin-top: 15px;">Got it!</button>
             </div>
@@ -235,9 +250,12 @@
                     <p>Room: <strong id="display-room-code">----</strong></p>
                     <button id="leaderboard-btn" class="btn-outline" style="padding: 4px 10px; font-size: 0.75rem; color: white; border-color: rgba(255,255,255,0.3);">📊 Standings</button>
                 </div>
-                <p style="font-size: 0.85rem; width: 100%; text-align: left;">Vacancy: <span id="display-max-players" style="color: #10B981; font-weight: bold;">1/4</span></p>
+                <div style="display: flex; justify-content: space-between; width: 100%; align-items: center;">
+                    <p style="font-size: 0.85rem; margin: 0;">Vacancy: <span id="display-max-players" style="color: #10B981; font-weight: bold;">1/4</span></p>
+                    <button id="add-bot-btn" class="btn-outline" style="padding: 4px 10px; font-size: 0.75rem; display: none; color: white; border-color: rgba(255,255,255,0.3);">🤖 Add Bot</button>
+                </div>
+                
                 <div class="room-actions">
-                    <button id="add-bot-btn" class="btn-outline" style="padding: 6px 12px; font-size: 0.8rem; display: none; background: rgba(255,255,255,0.2); color: white; border-color: rgba(255,255,255,0.3);">🤖 Add Bot</button>
                     <button id="copy-link-btn" style="background: rgba(255,255,255,0.2); padding: 6px 12px; font-size: 0.8rem;">Share Link</button>
                     <button id="vote-end-btn" class="danger" style="padding: 6px 12px; font-size: 0.8rem;">Vote End</button>
                     <button id="exit-btn" class="danger" style="padding: 6px 12px; font-size: 0.8rem; background: #991B1B;">Lobby</button>
@@ -309,10 +327,12 @@
         let roomCode = ""; let roomMaxPlayers = 4; let isHost = false; let myRole = null;
         let playersData = {}; let currentRound = 1; let soundEnabled = true; let dialogueRevealed = false;
         let gameMaxRounds = 20; let gameStatus = 'lobby'; let lastVoteCount = 0;
+        let botTimeouts = []; let currentLastGuess = null;
 
         const roleEmojis = { OC: "👨‍⚖️", Daroga: "👮", Police: "🕵️", Chor: "🏃", DC: "🏛️", Army: "🪖" };
         const roles4 = [{name:"OC",pts:2000},{name:"Daroga",pts:1200},{name:"Police",pts:500},{name:"Chor",pts:0}];
         const roles6 = [{name:"DC",pts:2500},{name:"OC",pts:2000},{name:"Army",pts:1500},{name:"Daroga",pts:1200},{name:"Police",pts:500},{name:"Chor",pts:0}];
+        const botChatMsgs = ["Hi everyone! 👋", "Who is the Chor? 🤔", "I am definitely not the Chor 😎", "Good luck!", "👮🚓", "😂", "This is fun!", "Don't catch me!"];
 
         // --- Sound System ---
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -326,29 +346,17 @@
             let now = audioCtx.currentTime;
             
             if(type === 'click') {
-                osc.type = 'sine'; osc.frequency.setValueAtTime(600, now);
-                gain.gain.setValueAtTime(0.1, now); gain.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
-                osc.start(now); osc.stop(now + 0.1);
+                osc.type = 'sine'; osc.frequency.setValueAtTime(600, now); gain.gain.setValueAtTime(0.1, now); gain.gain.exponentialRampToValueAtTime(0.001, now + 0.1); osc.start(now); osc.stop(now + 0.1);
             } else if (type === 'flip') {
-                osc.type = 'triangle'; osc.frequency.setValueAtTime(800, now);
-                gain.gain.setValueAtTime(0.1, now); gain.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
-                osc.start(now); osc.stop(now + 0.15);
+                osc.type = 'triangle'; osc.frequency.setValueAtTime(800, now); gain.gain.setValueAtTime(0.1, now); gain.gain.exponentialRampToValueAtTime(0.001, now + 0.15); osc.start(now); osc.stop(now + 0.15);
             } else if (type === 'whistle') { 
-                osc.type = 'sine'; osc.frequency.setValueAtTime(1500, now); osc.frequency.linearRampToValueAtTime(2500, now + 0.2); osc.frequency.linearRampToValueAtTime(2000, now + 0.4);
-                gain.gain.setValueAtTime(0.15, now); gain.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
-                osc.start(now); osc.stop(now + 0.5);
+                osc.type = 'sine'; osc.frequency.setValueAtTime(1500, now); osc.frequency.linearRampToValueAtTime(2500, now + 0.2); osc.frequency.linearRampToValueAtTime(2000, now + 0.4); gain.gain.setValueAtTime(0.15, now); gain.gain.exponentialRampToValueAtTime(0.001, now + 0.5); osc.start(now); osc.stop(now + 0.5);
             } else if (type === 'win') {
-                osc.type = 'square'; osc.frequency.setValueAtTime(400, now); osc.frequency.setValueAtTime(600, now + 0.1);
-                gain.gain.setValueAtTime(0.05, now); gain.gain.linearRampToValueAtTime(0, now + 0.3);
-                osc.start(now); osc.stop(now + 0.3);
+                osc.type = 'square'; osc.frequency.setValueAtTime(400, now); osc.frequency.setValueAtTime(600, now + 0.1); gain.gain.setValueAtTime(0.05, now); gain.gain.linearRampToValueAtTime(0, now + 0.3); osc.start(now); osc.stop(now + 0.3);
             } else if (type === 'error') {
-                osc.type = 'sawtooth'; osc.frequency.setValueAtTime(200, now);
-                gain.gain.setValueAtTime(0.1, now); gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
-                osc.start(now); osc.stop(now + 0.3);
+                osc.type = 'sawtooth'; osc.frequency.setValueAtTime(200, now); gain.gain.setValueAtTime(0.1, now); gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3); osc.start(now); osc.stop(now + 0.3);
             } else if (type === 'alert') {
-                osc.type = 'sine'; osc.frequency.setValueAtTime(900, now); osc.frequency.setValueAtTime(1200, now + 0.1);
-                gain.gain.setValueAtTime(0.1, now); gain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
-                osc.start(now); osc.stop(now + 0.2);
+                osc.type = 'sine'; osc.frequency.setValueAtTime(900, now); osc.frequency.setValueAtTime(1200, now + 0.1); gain.gain.setValueAtTime(0.1, now); gain.gain.exponentialRampToValueAtTime(0.001, now + 0.2); osc.start(now); osc.stop(now + 0.2);
             }
         }
         document.addEventListener('click', (e) => { if (e.target.tagName === 'BUTTON' || e.target.classList.contains('emoji-btn')) playSound('click'); });
@@ -363,20 +371,17 @@
         if (playerName) {
             document.getElementById('lobby-screen').classList.add('active');
             document.getElementById('player-name').value = playerName;
-            document.getElementById('profile-pic').src = playerPhoto;
-            document.getElementById('profile-pic').style.display = "block";
+        } else {
+            document.getElementById('auth-overlay').classList.add('active');
         }
 
         auth.onAuthStateChanged(user => {
             if (user) {
                 playerId = user.uid; playerName = user.displayName || "Player";
-                playerPhoto = user.photoURL || playerPhoto;
-                localStorage.setItem('cp_photo', playerPhoto);
+                playerPhoto = user.photoURL || playerPhoto; localStorage.setItem('cp_photo', playerPhoto);
                 db.ref(`users/${playerId}/profile`).update({ name: playerName, photo: playerPhoto });
                 if(document.getElementById('auth-overlay').classList.contains('active')) finishAuth();
-            } else if (!playerName) {
-                document.getElementById('auth-overlay').classList.add('active');
-            }
+            } 
         });
 
         document.getElementById('google-login-btn').onclick = () => auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()).catch(e => alert("Login Failed."));
@@ -391,18 +396,17 @@
             document.getElementById('auth-overlay').classList.remove('active');
             document.getElementById('lobby-screen').classList.add('active');
             document.getElementById('player-name').value = playerName;
-            document.getElementById('profile-pic').src = playerPhoto;
-            document.getElementById('profile-pic').style.display = "block";
         }
 
         // --- Profile Modals ---
         document.getElementById('profile-btn').onclick = () => {
             document.getElementById('profile-name').innerText = playerName;
             document.getElementById('profile-desc').innerText = `"${playerDesc}"`;
+            document.getElementById('profile-pic').src = playerPhoto;
+            document.getElementById('profile-pic').style.display = "block";
             db.ref(`users/${playerId}/stats`).once('value', snap => {
                 const stats = snap.val() || { wins: 0, lifetimeScore: 0 };
-                document.getElementById('stat-wins').innerText = stats.wins;
-                document.getElementById('stat-score').innerText = stats.lifetimeScore;
+                document.getElementById('stat-wins').innerText = stats.wins; document.getElementById('stat-score').innerText = stats.lifetimeScore;
             });
             document.getElementById('profile-overlay').classList.add('active');
         };
@@ -416,7 +420,7 @@
             const newName = document.getElementById('player-name').value.trim();
             if (newName) {
                 playerName = newName; localStorage.setItem('cp_playerName', playerName);
-                if (roomCode) db.ref(`rooms/${roomCode}/players/${playerId}/update`).set({ name: playerName });
+                if (roomCode) db.ref(`rooms/${roomCode}/players/${playerId}/name`).set(playerName);
                 alert("Name updated!");
             }
         };
@@ -440,8 +444,11 @@
 
         document.getElementById('add-bot-btn').onclick = () => {
             if (!isHost) return;
-            const currentPlayersCount = Object.keys(playersData).length;
-            if (currentPlayersCount >= roomMaxPlayers) return alert("Room is full!");
+            const currentBots = Object.values(playersData).filter(p => p.isBot).length;
+            const maxBots = roomMaxPlayers === 4 ? 3 : 5;
+            if (currentBots >= maxBots) return alert(`Maximum bots (${maxBots}) reached for this game size!`);
+            
+            if (Object.keys(playersData).length >= roomMaxPlayers) return alert("Room is full!");
 
             const botNames = ["Alpha", "Beta", "Gamma", "Delta", "Echo"];
             const bName = "Bot " + botNames[Math.floor(Math.random() * botNames.length)] + " " + Math.floor(Math.random() * 100);
@@ -484,17 +491,14 @@
         function cancelJoinRequest() { db.ref(`rooms/${roomCode}/requests/${playerId}`).remove(); document.getElementById('waiting-overlay').classList.remove('active'); }
 
         function enterGameScreen() {
-            document.getElementById('lobby-screen').classList.remove('active');
-            document.getElementById('game-screen').classList.add('active');
+            document.getElementById('lobby-screen').classList.remove('active'); document.getElementById('game-screen').classList.add('active');
             document.getElementById('display-room-code').innerText = roomCode;
             if(roomMaxPlayers === 6) document.getElementById('card-table').classList.add('six-players');
             window.history.replaceState(null, '', `?room=${roomCode}`);
             document.getElementById('chat-messages').innerHTML = ""; 
             
             const myStatusRef = db.ref(`rooms/${roomCode}/players/${playerId}/status`);
-            db.ref('.info/connected').on('value', function(snap) {
-                if (snap.val() === true) { myStatusRef.onDisconnect().set('offline'); myStatusRef.set('online'); }
-            });
+            db.ref('.info/connected').on('value', function(snap) { if (snap.val() === true) { myStatusRef.onDisconnect().set('offline'); myStatusRef.set('online'); } });
             db.ref(`rooms/${roomCode}/endVotes/${playerId}`).onDisconnect().remove();
             
             listenToRoomData(); setupChatListener();
@@ -516,14 +520,11 @@
                 playersData = snap.val() || {};
                 const playerIds = Object.keys(playersData);
                 document.getElementById('display-max-players').innerText = `${playerIds.length}/${roomMaxPlayers}`;
-                
                 document.getElementById('add-bot-btn').style.display = (isHost && playerIds.length < roomMaxPlayers && gameStatus === 'lobby') ? 'inline-block' : 'none';
 
                 db.ref(`rooms/${roomCode}/info/hostId`).once('value', hSnap => {
                     let humanIds = playerIds.filter(id => !playersData[id].isBot);
-                    if (humanIds.length > 0 && !humanIds.includes(hSnap.val()) && humanIds[0] === playerId) {
-                        db.ref(`rooms/${roomCode}/info/hostId`).set(playerId);
-                    }
+                    if (humanIds.length > 0 && !humanIds.includes(hSnap.val()) && humanIds[0] === playerId) db.ref(`rooms/${roomCode}/info/hostId`).set(playerId);
                 });
 
                 const list = document.getElementById('player-list'); list.innerHTML = ""; 
@@ -540,29 +541,41 @@
                 });
 
                 checkPauseState(); 
-
                 if (playerIds.length === roomMaxPlayers && isHost && gameStatus === 'lobby') hostDealsCards();
             });
 
             db.ref(`rooms/${roomCode}/gameState/round`).on('value', snap => { if (snap.val()) currentRound = snap.val(); });
             db.ref(`rooms/${roomCode}/dialogue`).on('value', snap => { if (snap.val()) document.getElementById('dialogue-box').innerHTML = snap.val(); });
             db.ref(`rooms/${roomCode}/convPhase`).on('value', snap => handleConversationPhase(snap.val()));
+            
             db.ref(`rooms/${roomCode}/cards`).on('value', snap => { if (snap.val()) renderCards(snap.val()); });
 
+            // Listen for Card Guesses (Visual Shake animation)
+            db.ref(`rooms/${roomCode}/lastGuess`).on('value', snap => {
+                currentLastGuess = snap.val();
+                applyLastGuessVisuals();
+            });
+
             db.ref(`rooms/${roomCode}/endVotes`).on('value', snap => {
-                const votes = snap.val() || {}; 
-                const voteCount = Object.keys(votes).length;
+                const votes = snap.val() || {}; const voteCount = Object.keys(votes).length;
                 let humanCount = Object.keys(playersData).filter(id => !playersData[id].isBot).length;
-                
                 const display = document.getElementById('vote-count-display');
+                
                 if (voteCount > 0) {
                     if(voteCount > lastVoteCount) playSound('alert'); 
                     lastVoteCount = voteCount;
                     display.style.display = "block"; display.innerText = `Ending Votes: ${voteCount}/${humanCount}`;
                     if (voteCount >= humanCount && isHost) triggerEndGame();
-                } else {
-                    display.style.display = "none";
-                    lastVoteCount = 0;
+                } else { display.style.display = "none"; lastVoteCount = 0; }
+            });
+        }
+
+        window.applyLastGuessVisuals = function() {
+            if(!currentLastGuess) return;
+            const allCardEls = document.querySelectorAll('.card');
+            allCardEls.forEach(cardEl => {
+                if(cardEl.getAttribute('data-owner') === currentLastGuess.suspect) {
+                    cardEl.classList.add(currentLastGuess.correct ? 'guess-correct' : 'guess-wrong');
                 }
             });
         }
@@ -599,33 +612,62 @@
 
         // --- Core Gameplay & Bots ---
         function hostDealsCards() {
-            dialogueRevealed = false;
+            dialogueRevealed = false; botTimeouts.forEach(clearTimeout); botTimeouts = [];
             const activeRoles = roomMaxPlayers === 6 ? roles6 : roles4;
             const shuffled = [...activeRoles].sort(() => Math.random() - 0.5);
             const cardData = {};
             for(let i=0; i<roomMaxPlayers; i++) cardData[i] = { role: shuffled[i].name, points: shuffled[i].pts, owner: null };
             
+            db.ref(`rooms/${roomCode}/lastGuess`).remove();
             db.ref(`rooms/${roomCode}/cards`).set(cardData);
             db.ref(`rooms/${roomCode}/gameState`).update({ status: 'playing' });
             db.ref(`rooms/${roomCode}/dialogue`).set(`<strong>Round ${currentRound}/${gameMaxRounds}</strong><br/>Pick a card!`);
             db.ref(`rooms/${roomCode}/convPhase`).remove(); 
+
+            // Bot Picking
+            Object.keys(playersData).filter(id => playersData[id].isBot).forEach((bId, idx) => {
+                let pickDelay = Math.floor(Math.random() * 6000) + 4000; 
+                let t = setTimeout(() => {
+                    db.ref(`rooms/${roomCode}/cards`).once('value', snap => {
+                        let cData = snap.val(); if(!cData) return;
+                        let avail = Object.keys(cData).filter(k => !cData[k].owner);
+                        if(avail.length > 0 && !Object.values(cData).some(c => c.owner === bId)) {
+                            let rKey = avail[Math.floor(Math.random() * avail.length)];
+                            db.ref(`rooms/${roomCode}/cards/${rKey}`).update({ owner: bId }); playSound('flip');
+                        }
+                    });
+                }, pickDelay);
+                botTimeouts.push(t);
+
+                if(Math.random() < 0.25) {
+                    setTimeout(() => {
+                        db.ref(`rooms/${roomCode}/chat`).push({ sender: playersData[bId].name, text: botChatMsgs[Math.floor(Math.random()*botChatMsgs.length)] });
+                    }, Math.random() * 3000 + 2000);
+                }
+            });
         }
 
         function renderCards(cards) {
             const table = document.getElementById('card-table'); table.innerHTML = "";
             let claimedCount = 0; let iClaimed = false;
+            let isNewRound = (Object.values(cards).filter(c => c.owner).length === 0);
 
             Object.values(cards).forEach(c => { if (c.owner === playerId) iClaimed = true; });
 
-            Object.keys(cards).forEach(key => {
+            Object.keys(cards).forEach((key, index) => {
                 const cardObj = cards[key];
                 const cardEl = document.createElement('div'); 
                 cardEl.className = 'card';
                 cardEl.setAttribute('data-owner', cardObj.owner || ""); 
+                
+                // Add deal animation if completely new round
+                if (isNewRound) {
+                    cardEl.classList.add('deal-anim');
+                    cardEl.style.animationDelay = `${index * 0.1}s`;
+                }
 
                 if (cardObj.owner) {
                     claimedCount++; cardEl.classList.add('flipped');
-                    
                     if (cardObj.owner === playerId) cardEl.classList.add('my-card');
 
                     const ownerData = playersData[cardObj.owner];
@@ -655,24 +697,7 @@
                 table.appendChild(cardEl);
             });
 
-            // Bot Card Picking
-            if (isHost && gameStatus === 'playing') {
-                let availableKeys = Object.keys(cards).filter(k => !cards[k].owner);
-                let botsToPick = Object.keys(playersData).filter(id => playersData[id].isBot && !Object.values(cards).some(c => c.owner === id));
-                if (botsToPick.length > 0 && availableKeys.length > 0) {
-                    botsToPick.forEach((bId, index) => {
-                        setTimeout(() => {
-                            db.ref(`rooms/${roomCode}/cards`).once('value', snap => {
-                                let cData = snap.val(); let avail = Object.keys(cData).filter(k => !cData[k].owner);
-                                if(avail.length > 0) {
-                                    let rKey = avail[Math.floor(Math.random() * avail.length)];
-                                    playSound('flip'); db.ref(`rooms/${roomCode}/cards/${rKey}`).update({ owner: bId });
-                                }
-                            });
-                        }, 1000 + (index * 800)); 
-                    });
-                }
-            }
+            if(currentLastGuess) setTimeout(applyLastGuessVisuals, 50);
 
             if (claimedCount === roomMaxPlayers && isHost) {
                 db.ref(`rooms/${roomCode}/convPhase`).once('value', snap => {
@@ -681,33 +706,31 @@
             }
         }
 
-        // --- INTERACTIVE CONVERSATION SYSTEM & BOT LOGIC ---
+        // --- INTERACTIVE CONVERSATION SYSTEM & BOTS ---
         function handleConversationPhase(phase) {
             const guessSec = document.getElementById('guess-section');
             if (!phase) { guessSec.style.display = "none"; return; }
             guessSec.style.display = "block";
 
-            // Bot Simulation by Host
+            // Bot Dialogue Automation
             if (isHost) {
                 db.ref(`rooms/${roomCode}/cards`).once('value', snap => {
                     const cards = Object.values(snap.val() || {});
-                    const darogaId = cards.find(c => c.role === 'Daroga')?.owner;
-                    const policeId = cards.find(c => c.role === 'Police')?.owner;
-                    const dIsBot = darogaId && playersData[darogaId]?.isBot;
-                    const pIsBot = policeId && playersData[policeId]?.isBot;
+                    const dId = cards.find(c => c.role === 'Daroga')?.owner; const pId = cards.find(c => c.role === 'Police')?.owner;
+                    const dBot = dId && playersData[dId]?.isBot; const pBot = pId && playersData[pId]?.isBot;
 
-                    if (phase === 'daroga_call' && dIsBot) {
-                        setTimeout(() => advanceConv('police_reply', `<strong>👮 ${playersData[darogaId].name}:</strong> Police, police koun hai?`, false, true), 2000);
-                    } else if (phase === 'police_reply' && pIsBot) {
-                        setTimeout(() => advanceConv('daroga_order', `<strong>🕵️ ${playersData[policeId].name}:</strong> Hum hai!`, true, false), 2000);
-                    } else if (phase === 'daroga_order' && dIsBot) {
-                        setTimeout(() => advanceConv('guess_time', `<strong>👮 ${playersData[darogaId].name}:</strong> Chor ko pakdo!`, true, false), 2000);
-                    } else if (phase === 'guess_time' && pIsBot) {
+                    if (phase === 'daroga_call' && dBot) {
+                        setTimeout(() => advanceConv('police_reply', `<strong>👮 ${playersData[dId].name}:</strong> Police, police koun hai?`, false, true), 3000);
+                    } else if (phase === 'police_reply' && pBot) {
+                        setTimeout(() => advanceConv('daroga_order', `<strong>🕵️ ${playersData[pId].name}:</strong> Hum hai!`, true, false), 3000);
+                    } else if (phase === 'daroga_order' && dBot) {
+                        setTimeout(() => advanceConv('guess_time', `<strong>👮 ${playersData[dId].name}:</strong> Chor ko pakdo!`, true, false), 2000);
+                    } else if (phase === 'guess_time' && pBot) {
                         setTimeout(() => {
-                            let suspects = Object.keys(playersData).filter(id => id !== policeId && id !== darogaId);
+                            let suspects = Object.keys(playersData).filter(id => id !== pId && id !== dId);
                             let randomSuspect = suspects[Math.floor(Math.random() * suspects.length)];
-                            makeGuess(randomSuspect, policeId);
-                        }, 3000);
+                            makeGuess(randomSuspect, pId);
+                        }, 4000);
                     }
                 });
             }
@@ -750,11 +773,9 @@
                 Object.keys(playersData).forEach(id => {
                     const isDaroga = cards.some(c => c.owner === id && c.role === "Daroga");
                     if (id !== playerId && !isDaroga) {
-                        
                         allCardEls.forEach(cardEl => {
                             if(cardEl.getAttribute('data-owner') === id) {
-                                cardEl.classList.add('suspect-glow');
-                                cardEl.onclick = () => makeGuess(id, playerId);
+                                cardEl.classList.add('suspect-glow'); cardEl.onclick = () => makeGuess(id, playerId);
                             }
                         });
 
@@ -772,10 +793,10 @@
         function makeGuess(suspectId, guesserId) {
             const isMyGuess = (guesserId === playerId);
             const guesserName = playersData[guesserId].name;
+            const suspectName = playersData[suspectId].name;
 
             document.getElementById('guess-section').style.display = "none";
             document.querySelectorAll('.suspect-glow').forEach(el => { el.classList.remove('suspect-glow'); el.onclick = null; });
-            
             if(isMyGuess || isHost) db.ref(`rooms/${roomCode}/convPhase`).remove(); 
             
             db.ref(`rooms/${roomCode}/cards`).once('value', snap => {
@@ -785,16 +806,17 @@
 
                 if (suspectRole === "Chor") {
                     playSound('win');
-                    db.ref(`rooms/${roomCode}/dialogue`).set(`🎉 **${guesserName}** caught the Chor! (+500 pts)`);
+                    db.ref(`rooms/${roomCode}/dialogue`).set(`🕵️ <strong>${guesserName}</strong> guessed <strong>${suspectName}</strong>!<br/><br/>🎉 Correct! The Chor is caught! (+500 pts)`);
                     if(isMyGuess || isHost) updateScore(guesserId, 500); 
                 } else {
                     playSound('error');
-                    db.ref(`rooms/${roomCode}/dialogue`).set(`❌ Wrong! The Chor escaped! (+500 to Chor)`);
+                    db.ref(`rooms/${roomCode}/dialogue`).set(`🕵️ <strong>${guesserName}</strong> guessed <strong>${suspectName}</strong>!<br/><br/>❌ Wrong! The Chor escaped! (+500 to Chor)`);
                     if(isMyGuess || isHost) updateScore(chorId, 500); 
                 }
 
                 if(isMyGuess || isHost) {
                     cards.forEach(c => { if (c.role !== "Police" && c.role !== "Chor" && c.owner) updateScore(c.owner, c.points); });
+                    db.ref(`rooms/${roomCode}/lastGuess`).set({ suspect: suspectId, correct: (suspectRole === "Chor") });
                 }
                 
                 dialogueRevealed = true;
@@ -805,13 +827,11 @@
                         if (currentRound >= gameMaxRounds) triggerEndGame();
                         else {
                             db.ref(`rooms/${roomCode}/gameState/round`).set(currentRound + 1);
-                            db.ref(`rooms/${roomCode}/cards`).remove();
-                            db.ref(`rooms/${roomCode}/dialogue`).set(`Round over! Preparing next round...`);
                             setTimeout(hostDealsCards, 2000); 
                         }
                     }
                     if(isMyGuess) myRole = null;
-                }, 5000);
+                }, 6000); // Wait 6 seconds so people can enjoy the card animations!
             });
         }
 
@@ -842,7 +862,17 @@
                 });
                 html += `</div>`;
                 
-                // Only save stats to Humans
+                if (isHost) {
+                    html += `<div style="margin-top:15px; display:flex; gap:10px; justify-content:center;">
+                        <button onclick="window.playAgain()">Play Again</button>
+                        <button class="danger" onclick="window.location.reload()">Home</button>
+                    </div>`;
+                } else {
+                    html += `<div style="margin-top:15px; display:flex; gap:10px; justify-content:center;">
+                        <button class="danger" onclick="window.location.reload()">Home</button>
+                    </div>`;
+                }
+
                 const winner = sorted[0];
                 if(!winner.isBot) db.ref(`users/${winner.id}/stats/wins`).once('value', s => db.ref(`users/${winner.id}/stats/wins`).set((s.val()||0)+1));
                 sorted.forEach(player => { if(!player.isBot) db.ref(`users/${player.id}/stats/lifetimeScore`).once('value', s => db.ref(`users/${player.id}/stats/lifetimeScore`).set((s.val()||0)+player.score)); });
@@ -850,10 +880,15 @@
                 db.ref(`rooms/${roomCode}/dialogue`).set(html);
                 db.ref(`rooms/${roomCode}/gameState/status`).set('ended');
                 playSound('win');
-                
-                if (isHost) setTimeout(() => db.ref(`rooms/${roomCode}`).remove(), 30000);
             });
         }
+
+        window.playAgain = function() {
+            Object.keys(playersData).forEach(id => db.ref(`rooms/${roomCode}/players/${id}/score`).set(0));
+            db.ref(`rooms/${roomCode}/endVotes`).remove();
+            db.ref(`rooms/${roomCode}/gameState/round`).set(1);
+            db.ref(`rooms/${roomCode}/gameState/status`).set('lobby');
+        };
 
         function updateScore(id, pts) { db.ref(`rooms/${roomCode}/players/${id}/score`).once('value', s => db.ref(`rooms/${roomCode}/players/${id}/score`).set((s.val()||0)+pts)); }
         
@@ -883,7 +918,7 @@
             window.location.reload(); 
         };
 
-        // --- Chat & Floating Emojis ---
+        // --- Chat ---
         const chatInput = document.getElementById('chat-input');
         window.sendQuickEmoji = function(emoji) { db.ref(`rooms/${roomCode}/chat`).push({ sender: playerName, text: emoji }); }
         
