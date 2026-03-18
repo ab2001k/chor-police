@@ -45,7 +45,6 @@
         .overlay.active { display: flex; }
         .modal-box { background: white; padding: 25px; border-radius: 20px; width: 100%; max-width: 350px; text-align: center; max-height: 80vh; overflow-y: auto;}
 
-        /* Unobtrusive Pause Banner */
         #pause-banner { display: none; background: #FEF2F2; color: #E11D48; padding: 12px; text-align: center; font-weight: 600; font-size: 0.85rem; border-bottom: 1px solid #FECDD3; flex-shrink: 0; }
 
         #room-info { display: flex; flex-direction: column; align-items: center; gap: 8px; background: var(--text-main); color: white; padding: 15px; border-radius: 12px; flex-shrink: 0;}
@@ -77,7 +76,7 @@
         .attention-btn.danger { animation: pulseAttentionDanger 1.5s infinite; }
         @keyframes pulseAttentionDanger { 0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(225, 29, 72, 0.7); } 50% { transform: scale(1.05); box-shadow: 0 0 15px 5px rgba(225, 29, 72, 0.4); } 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(225, 29, 72, 0); } }
 
-        .card-inner-text { transform: rotateY(180deg); width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; } 
+        .card-inner-text { transform: rotateY(180deg); width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; position: relative;} 
         .card-avatar { width: 36px; height: 36px; border-radius: 50%; border: 2px solid var(--primary); object-fit: cover; margin-bottom: 4px; background: white;}
 
         #dialogue-box { background: #EFF6FF; color: #1E3A8A; padding: 15px; border-radius: 12px; text-align: center; font-weight: 500; border-left: 4px solid var(--primary); font-size: 0.95rem; min-height: 24px; flex-shrink: 0;}
@@ -108,6 +107,9 @@
         .floating-emoji { position: fixed; bottom: 20%; left: 50%; font-size: 4rem; transform: translateX(-50%); animation: floatUp 2s forwards; z-index: 2000; pointer-events: none;}
         @keyframes floatUp { 0% { bottom: 20%; opacity: 1; transform: translateX(-50%) scale(0.5); } 20% { opacity: 1; transform: translateX(-50%) scale(1.2); } 100% { bottom: 70%; opacity: 0; transform: translateX(-50%) scale(1); } }
         
+        .react-emoji { position: absolute; top: -20px; right: -10px; font-size: 2rem; animation: floatReact 2s forwards; z-index: 20; }
+        @keyframes floatReact { 0% { transform: translateY(0) scale(0.5); opacity: 1; } 20% { transform: translateY(-20px) scale(1.2); opacity: 1; } 100% { transform: translateY(-60px) scale(1); opacity: 0; } }
+
         .creator-branding { text-align: center; font-size: 0.8rem; color: var(--text-light); margin-top: auto; padding-top: 10px; flex-shrink: 0;}
         .creator-branding a { color: var(--primary); text-decoration: none; font-weight: 600;}
         
@@ -169,10 +171,15 @@
         <div id="profile-overlay" class="overlay">
             <div class="modal-box">
                 <img id="profile-pic" src="" style="width: 80px; height: 80px; border-radius: 50%; display: none; margin: 0 auto 10px auto; border: 2px solid var(--primary); object-fit: cover;">
-                <h2 id="profile-name" style="margin: 0 0 5px 0;">Player</h2>
+                
+                <div style="display: flex; gap: 8px; margin-bottom: 10px;">
+                    <input type="text" id="profile-name-input" placeholder="Change Name" maxlength="12" style="margin: 0; padding: 8px; font-size: 0.9rem;">
+                    <button id="rename-btn" style="padding: 8px 12px; font-size: 0.85rem;">Save</button>
+                </div>
+                
                 <div style="margin-bottom: 15px;">
                     <p id="profile-desc" style="font-size: 0.9rem; color: var(--text-light); font-style: italic; margin: 0;">Loading description...</p>
-                    <button class="btn-outline" id="edit-desc-btn" style="padding: 4px 10px; font-size: 0.75rem; margin-top: 8px;">✏️ Edit Description</button>
+                    <button class="btn-outline" id="edit-desc-btn" style="padding: 4px 10px; font-size: 0.75rem; margin-top: 8px;">✏️ Edit Desc</button>
                 </div>
                 <div style="background: var(--surface); padding: 10px; border-radius: 8px; margin-bottom: 10px; text-align: left;">🏆 <strong>Total Wins:</strong> <span id="stat-wins">0</span></div>
                 <div style="background: var(--surface); padding: 10px; border-radius: 8px; margin-bottom: 15px; text-align: left;">⭐ <strong>Lifetime Score:</strong> <span id="stat-score">0</span></div>
@@ -194,11 +201,6 @@
             <div style="display: flex; justify-content: space-between; align-items: center;">
                 <h2 style="margin: 0;">Game Lobby</h2>
                 <button class="btn-outline" onclick="document.getElementById('rules-overlay').classList.add('active')" style="padding: 4px 8px; font-size: 0.75rem;">📖 Rules</button>
-            </div>
-            
-            <div style="display: flex; gap: 10px;">
-                <input type="text" id="player-name" placeholder="Your Name" maxlength="12" style="margin: 0;">
-                <button id="rename-btn" style="white-space: nowrap;">Update</button>
             </div>
 
             <div class="card-panel">
@@ -227,6 +229,8 @@
                 <input type="text" id="room-code-input" placeholder="6-Digit Code" maxlength="6" style="text-transform: uppercase; text-align: center; letter-spacing: 2px;">
                 <button id="join-btn" class="btn-outline" style="width: 100%;">Join / Reconnect</button>
             </div>
+
+            <button id="lobby-share-btn" class="btn-outline" style="width: 100%; margin-top: 5px;">🔗 Share Game with Friends</button>
 
             <div class="creator-branding">
                 Created by <strong>Abhik Dutta</strong><br>
@@ -321,16 +325,38 @@
         let roomCode = ""; let roomMaxPlayers = 4; let isHost = false; let myRole = null;
         let playersData = {}; let currentRound = 1; let soundEnabled = true; let dialogueRevealed = false;
         let gameMaxRounds = 20; let gameStatus = 'lobby'; let lastVoteCount = 0;
-        let botTimeouts = {}; let botDialogueTimeouts = {}; let currentLastGuess = null;
+        let botTimeouts = {}; let botDialogueTimeouts = {}; let currentLastGuess = null; let bgmInterval = null;
 
         const roleEmojis = { OC: "👨‍⚖️", Daroga: "👮", Police: "🕵️", Chor: "🏃", DC: "🏛️", Army: "🪖" };
         const roles4 = [{name:"OC",pts:2000},{name:"Daroga",pts:1200},{name:"Police",pts:500},{name:"Chor",pts:0}];
         const roles6 = [{name:"DC",pts:2500},{name:"OC",pts:2000},{name:"Army",pts:1500},{name:"Daroga",pts:1200},{name:"Police",pts:500},{name:"Chor",pts:0}];
         const botChatMsgs = ["Hi everyone! 👋", "Who is the Chor? 🤔", "I am definitely not the Chor 😎", "Good luck!", "👮🚓", "😂", "This is fun!", "Don't catch me!"];
 
-        // --- Sound System ---
+        // --- Sound System & Ambient BGM ---
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        document.body.addEventListener('click', () => { if (audioCtx.state === 'suspended') audioCtx.resume(); }, { once: true });
+        document.body.addEventListener('click', () => { 
+            if (audioCtx.state === 'suspended') audioCtx.resume(); 
+            toggleBGM();
+        }, { once: true });
+
+        function toggleBGM() {
+            if (soundEnabled && !bgmInterval) {
+                let notes = [261.63, 329.63, 392.00, 523.25]; // Soft Ambient Tone
+                let i = 0;
+                bgmInterval = setInterval(() => {
+                    if(!soundEnabled || audioCtx.state === 'suspended') return;
+                    let osc = audioCtx.createOscillator(); let gain = audioCtx.createGain();
+                    osc.type = 'sine'; osc.frequency.value = notes[i] / 2; 
+                    gain.gain.setValueAtTime(0.005, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 2);
+                    osc.connect(gain); gain.connect(audioCtx.destination);
+                    osc.start(); osc.stop(audioCtx.currentTime + 2);
+                    i = (i+1)%notes.length;
+                }, 2500);
+            } else if (!soundEnabled && bgmInterval) {
+                clearInterval(bgmInterval); bgmInterval = null;
+            }
+        }
 
         function playSound(type) {
             if(!soundEnabled) return;
@@ -351,10 +377,12 @@
                 osc.type = 'sawtooth'; osc.frequency.setValueAtTime(200, now); gain.gain.setValueAtTime(0.1, now); gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3); osc.start(now); osc.stop(now + 0.3);
             } else if (type === 'alert') {
                 osc.type = 'sine'; osc.frequency.setValueAtTime(900, now); osc.frequency.setValueAtTime(1200, now + 0.1); gain.gain.setValueAtTime(0.1, now); gain.gain.exponentialRampToValueAtTime(0.001, now + 0.2); osc.start(now); osc.stop(now + 0.2);
+            } else if (type === 'sad') {
+                osc.type = 'sawtooth'; osc.frequency.setValueAtTime(300, now); osc.frequency.exponentialRampToValueAtTime(100, now + 0.8); gain.gain.setValueAtTime(0.1, now); gain.gain.linearRampToValueAtTime(0, now + 0.8); osc.start(now); osc.stop(now + 0.8);
             }
         }
         document.addEventListener('click', (e) => { if (e.target.tagName === 'BUTTON' || e.target.classList.contains('emoji-btn')) playSound('click'); });
-        document.getElementById('sound-toggle').onclick = function() { soundEnabled = !soundEnabled; this.innerText = soundEnabled ? "🔊 Sound: ON" : "🔇 Sound: OFF"; };
+        document.getElementById('sound-toggle').onclick = function() { soundEnabled = !soundEnabled; this.innerText = soundEnabled ? "🔊 Sound: ON" : "🔇 Sound: OFF"; toggleBGM(); };
 
         window.toggleCustomRound = function() {
             const select = document.getElementById('round-count'); const customInput = document.getElementById('custom-round-input');
@@ -364,7 +392,7 @@
         // --- Auth (No Flash) ---
         if (playerName) {
             document.getElementById('lobby-screen').classList.add('active');
-            document.getElementById('player-name').value = playerName;
+            document.getElementById('profile-name-input').value = playerName;
         } else {
             document.getElementById('auth-overlay').classList.add('active');
         }
@@ -389,11 +417,18 @@
         function finishAuth() {
             document.getElementById('auth-overlay').classList.remove('active');
             document.getElementById('lobby-screen').classList.add('active');
-            document.getElementById('player-name').value = playerName;
+            document.getElementById('profile-name-input').value = playerName;
         }
 
-        // --- Profile Modals ---
+        // --- Profile Modals & Share Lobby ---
+        document.getElementById('lobby-share-btn').onclick = () => { 
+            const link = window.location.origin + window.location.pathname;
+            if (navigator.share) navigator.share({ title: 'Chor Police', text: `Play Chor Police Multiplayer with me!`, url: link });
+            else { navigator.clipboard.writeText(link); alert("Website Link copied!"); }
+        };
+
         document.getElementById('profile-btn').onclick = () => {
+            document.getElementById('profile-name-input').value = playerName;
             document.getElementById('profile-name').innerText = playerName;
             document.getElementById('profile-desc').innerText = `"${playerDesc}"`;
             document.getElementById('profile-pic').src = playerPhoto;
@@ -411,10 +446,11 @@
         };
 
         document.getElementById('rename-btn').onclick = () => {
-            const newName = document.getElementById('player-name').value.trim();
+            const newName = document.getElementById('profile-name-input').value.trim();
             if (newName) {
                 playerName = newName; localStorage.setItem('cp_playerName', playerName);
                 if (roomCode) db.ref(`rooms/${roomCode}/players/${playerId}/name`).set(playerName);
+                document.getElementById('profile-name').innerText = playerName;
                 alert("Name updated!");
             }
         };
@@ -424,7 +460,7 @@
 
         // --- Create / Join / Bots ---
         document.getElementById('create-btn').onclick = () => {
-            if (!playerName) return alert("Please set your name!");
+            if (!playerName) return alert("Please set your name in Profile!");
             roomMaxPlayers = parseInt(document.getElementById('player-count').value);
             let rCountVal = document.getElementById('round-count').value;
             gameMaxRounds = rCountVal === 'custom' ? (parseInt(document.getElementById('custom-round-input').value) || 20) : parseInt(rCountVal);
@@ -450,7 +486,7 @@
         };
 
         document.getElementById('join-btn').onclick = () => {
-            if (!playerName) return alert("Please set your name!");
+            if (!playerName) return alert("Please set your name in Profile!");
             const codeInput = document.getElementById('room-code-input').value.trim().toUpperCase();
             if (codeInput.length !== 6) return alert("Enter a valid 6-digit code.");
             
@@ -500,7 +536,6 @@
             db.ref(`rooms/${roomCode}/info/hostId`).on('value', snap => {
                 isHost = (snap.val() === playerId);
                 if(isHost) monitorJoinRequests(); 
-                document.getElementById('add-bot-btn').style.display = (isHost && Object.keys(playersData).length < roomMaxPlayers) ? 'inline-block' : 'none';
             });
 
             db.ref(`rooms/${roomCode}/gameState/status`).on('value', snap => {
@@ -511,11 +546,12 @@
                 playersData = snap.val() || {};
                 const playerIds = Object.keys(playersData);
                 document.getElementById('display-max-players').innerText = `${playerIds.length}/${roomMaxPlayers}`;
-                document.getElementById('add-bot-btn').style.display = (isHost && playerIds.length < roomMaxPlayers) ? 'inline-block' : 'none';
-
+                
                 db.ref(`rooms/${roomCode}/info/hostId`).once('value', hSnap => {
                     let humanIds = playerIds.filter(id => !playersData[id].isBot);
-                    if (humanIds.length > 0 && !humanIds.includes(hSnap.val()) && humanIds[0] === playerId) db.ref(`rooms/${roomCode}/info/hostId`).set(playerId);
+                    if (humanIds.length > 0 && !humanIds.includes(hSnap.val()) && humanIds[0] === playerId) {
+                        db.ref(`rooms/${roomCode}/info/hostId`).set(playerId);
+                    }
                 });
 
                 const list = document.getElementById('player-list'); list.innerHTML = ""; 
@@ -576,6 +612,26 @@
                     cardEl.classList.add(currentLastGuess.correct ? 'guess-correct' : 'guess-wrong');
                 }
             });
+
+            // Specific sounds for Chor/Police
+            if (currentLastGuess.correct) {
+                if (playerId === currentLastGuess.chorId) playSound('sad'); else playSound('win'); 
+            } else {
+                if (playerId === currentLastGuess.guesserId) playSound('sad'); 
+                else if (playerId === currentLastGuess.chorId) playSound('win'); 
+                else playSound('error'); 
+            }
+
+            // Spawn emoji reaction on Chor's card
+            if (currentLastGuess.chorId) {
+                let chorCard = document.querySelector(`.card[data-owner="${currentLastGuess.chorId}"]`);
+                if (chorCard && !chorCard.querySelector('.react-emoji')) {
+                    let floatEmoji = document.createElement('div');
+                    floatEmoji.className = 'floating-emoji react-emoji';
+                    floatEmoji.innerText = currentLastGuess.correct ? "😭" : "😂";
+                    chorCard.appendChild(floatEmoji);
+                }
+            }
         }
 
         function checkPauseState() {
@@ -585,9 +641,11 @@
                 pauseBanner.style.display = "block";
                 let hasOffline = Object.keys(playersData).some(id => playersData[id].status === 'offline');
                 document.getElementById('kick-offline-btn').style.display = (isHost && hasOffline) ? 'inline-block' : 'none';
+                document.getElementById('add-bot-btn').style.display = isHost ? 'inline-block' : 'none';
             } else {
                 pauseBanner.style.display = "none";
                 document.getElementById('kick-offline-btn').style.display = 'none';
+                document.getElementById('add-bot-btn').style.display = 'none';
             }
         }
 
@@ -639,6 +697,7 @@
             db.ref(`rooms/${roomCode}/dialogue`).set(`<strong>Round ${currentRound}/${gameMaxRounds}</strong><br/>Pick a card!`);
             db.ref(`rooms/${roomCode}/convPhase`).remove(); 
 
+            // Occasional Random Bot Chat
             Object.keys(playersData).filter(id => playersData[id].isBot).forEach(bId => {
                 if(Math.random() < 0.25) {
                     setTimeout(() => {
@@ -648,6 +707,7 @@
             });
         }
 
+        // Sequential Bot Picker to Prevent Freezes
         function checkBotsNeedCards(cardsData) {
             if (!isHost || gameStatus !== 'playing') return;
             let bots = Object.keys(playersData).filter(id => playersData[id].isBot);
@@ -726,7 +786,7 @@
 
             if (claimedCount === roomMaxPlayers && isHost) {
                 db.ref(`rooms/${roomCode}/convPhase`).once('value', snap => {
-                    if(!snap.exists() && !dialogueRevealed) { // FIX: Prevent repeating loop
+                    if(!snap.exists() && !dialogueRevealed) { // Prevent repeating loop
                         db.ref(`rooms/${roomCode}/convPhase`).set('daroga_call');
                     }
                 });
@@ -736,7 +796,7 @@
         // --- INTERACTIVE CONVERSATION SYSTEM & BOTS ---
         function handleConversationPhase(phase) {
             const guessSec = document.getElementById('guess-section');
-            if (!phase || phase === 'ended') { guessSec.style.display = "none"; return; } // FIX: Ensure it stays hidden when ended
+            if (!phase || phase === 'ended') { guessSec.style.display = "none"; return; } 
             
             guessSec.style.display = "block";
 
@@ -828,7 +888,6 @@
             document.getElementById('guess-section').style.display = "none";
             document.querySelectorAll('.suspect-glow').forEach(el => { el.classList.remove('suspect-glow'); el.onclick = null; });
             
-            // FIX: Set to 'ended' instead of removing to prevent auto-repeating loop
             if(isMyGuess || isHost) db.ref(`rooms/${roomCode}/convPhase`).set('ended'); 
             
             db.ref(`rooms/${roomCode}/cards`).once('value', snap => {
@@ -837,18 +896,16 @@
                 let chorId = cards.find(c => c.role === "Chor")?.owner;
 
                 if (suspectRole === "Chor") {
-                    playSound('win');
                     db.ref(`rooms/${roomCode}/dialogue`).set(`🕵️ <strong>${guesserName}</strong> guessed <strong>${suspectName}</strong>!<br/><br/>🎉 Correct! The Chor is caught! (+500 pts)`);
                     if(isMyGuess || isHost) updateScore(guesserId, 500); 
                 } else {
-                    playSound('error');
                     db.ref(`rooms/${roomCode}/dialogue`).set(`🕵️ <strong>${guesserName}</strong> guessed <strong>${suspectName}</strong>!<br/><br/>❌ Wrong! The Chor escaped! (+500 to Chor)`);
                     if(isMyGuess || isHost) updateScore(chorId, 500); 
                 }
 
                 if(isMyGuess || isHost) {
                     cards.forEach(c => { if (c.role !== "Police" && c.role !== "Chor" && c.owner) updateScore(c.owner, c.points); });
-                    db.ref(`rooms/${roomCode}/lastGuess`).set({ suspect: suspectId, correct: (suspectRole === "Chor") });
+                    db.ref(`rooms/${roomCode}/lastGuess`).set({ suspect: suspectId, correct: (suspectRole === "Chor"), chorId: chorId, guesserId: guesserId });
                 }
                 
                 dialogueRevealed = true;
@@ -859,6 +916,8 @@
                         if (currentRound >= gameMaxRounds) triggerEndGame();
                         else {
                             db.ref(`rooms/${roomCode}/gameState/round`).set(currentRound + 1);
+                            db.ref(`rooms/${roomCode}/cards`).remove();
+                            db.ref(`rooms/${roomCode}/dialogue`).set(`Round over! Preparing next round...`);
                             setTimeout(hostDealsCards, 2000); 
                         }
                     }
@@ -918,6 +977,7 @@
         window.playAgain = function() {
             Object.keys(playersData).forEach(id => db.ref(`rooms/${roomCode}/players/${id}/score`).set(0));
             db.ref(`rooms/${roomCode}/endVotes`).remove();
+            db.ref(`rooms/${roomCode}/lastGuess`).remove();
             db.ref(`rooms/${roomCode}/dialogue`).set("Restarting match...");
             db.ref(`rooms/${roomCode}/gameState/round`).set(1);
             db.ref(`rooms/${roomCode}/gameState/status`).set('lobby');
