@@ -45,6 +45,9 @@
         .overlay.active { display: flex; }
         .modal-box { background: white; padding: 25px; border-radius: 20px; width: 100%; max-width: 350px; text-align: center; max-height: 80vh; overflow-y: auto;}
 
+        /* Unobtrusive Pause Banner */
+        #pause-banner { display: none; background: #FEF2F2; color: #E11D48; padding: 12px; text-align: center; font-weight: 600; font-size: 0.85rem; border-bottom: 1px solid #FECDD3; flex-shrink: 0; }
+
         #room-info { display: flex; flex-direction: column; align-items: center; gap: 8px; background: var(--text-main); color: white; padding: 15px; border-radius: 12px; flex-shrink: 0;}
         #room-info p { margin: 0; font-weight: 500; }
         #room-info strong { color: #38BDF8; font-size: 1.2rem; }
@@ -62,26 +65,13 @@
         .card.suspect-glow { box-shadow: 0 0 15px 4px rgba(225, 29, 72, 0.7) !important; border-color: var(--accent) !important; animation: pulseGlow 1.5s infinite; cursor: pointer !important; z-index: 10;}
         
         @keyframes pulseGlow { 0% { box-shadow: 0 0 10px 2px rgba(225, 29, 72, 0.5); } 50% { box-shadow: 0 0 20px 6px rgba(225, 29, 72, 0.8); } 100% { box-shadow: 0 0 10px 2px rgba(225, 29, 72, 0.5); } }
-
-        /* Reshuffle Deal Animation */
         @keyframes dealCards { 0% { transform: translateY(-50px) scale(0.5); opacity: 0; } 100% { transform: translateY(0) scale(1); opacity: 1; } }
         .deal-anim { animation: dealCards 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; opacity: 0; }
-
-        /* Guess Animations (Wrong & Correct) */
-        @keyframes guessWrong {
-            0%, 100% { transform: translateX(0) rotateY(180deg); }
-            20%, 60% { transform: translateX(-10px) rotateY(180deg); }
-            40%, 80% { transform: translateX(10px) rotateY(180deg); }
-        }
+        @keyframes guessWrong { 0%, 100% { transform: translateX(0) rotateY(180deg); } 20%, 60% { transform: translateX(-10px) rotateY(180deg); } 40%, 80% { transform: translateX(10px) rotateY(180deg); } }
         .card.guess-wrong { animation: guessWrong 0.5s ease forwards; border-color: var(--accent) !important; box-shadow: 0 0 15px 4px rgba(225, 29, 72, 0.7) !important; z-index: 10; }
-        
-        @keyframes guessCorrect {
-            0%, 100% { transform: scale(1) rotateY(180deg); }
-            50% { transform: scale(1.1) rotateY(180deg); box-shadow: 0 0 25px 8px rgba(16, 185, 129, 0.9); }
-        }
+        @keyframes guessCorrect { 0%, 100% { transform: scale(1) rotateY(180deg); } 50% { transform: scale(1.1) rotateY(180deg); box-shadow: 0 0 25px 8px rgba(16, 185, 129, 0.9); } }
         .card.guess-correct { animation: guessCorrect 0.6s ease forwards; border-color: #10B981 !important; box-shadow: 0 0 15px 4px rgba(16, 185, 129, 0.7) !important; z-index: 10; }
 
-        /* Buttons Animation */
         @keyframes pulseAttention { 0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7); } 50% { transform: scale(1.05); box-shadow: 0 0 15px 5px rgba(59, 130, 246, 0.4); } 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); } }
         .attention-btn { animation: pulseAttention 1.5s infinite; }
         .attention-btn.danger { animation: pulseAttentionDanger 1.5s infinite; }
@@ -92,6 +82,7 @@
 
         #dialogue-box { background: #EFF6FF; color: #1E3A8A; padding: 15px; border-radius: 12px; text-align: center; font-weight: 500; border-left: 4px solid var(--primary); font-size: 0.95rem; min-height: 24px; flex-shrink: 0;}
         #guess-section { display: none; background: #FFF1F2; padding: 15px; border-radius: 12px; text-align: center; border: 1px solid #FECDD3; flex-shrink: 0;}
+        #guess-section button { margin: 5px; }
         
         #player-list { list-style: none; padding: 0; margin: 0; background: var(--surface); padding: 10px; border-radius: 12px; flex-shrink: 0;}
         #player-list li { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--border-color); }
@@ -101,8 +92,11 @@
         .status-offline { background-color: #94A3B8; }
 
         #chat-wrapper { transition: 0.3s; margin-top: auto; display: flex; flex-direction: column; flex-shrink: 0;}
-        #chat-box { background: white; border: 1px solid var(--border-color); border-radius: 12px; display: flex; flex-direction: column; height: 160px;}
-        #emoji-bar { display: flex; justify-content: space-around; background: var(--surface); padding: 8px; border-bottom: 1px solid var(--border-color); font-size: 1.2rem; border-radius: 12px 12px 0 0;}
+        #chat-box { background: white; border: 1px solid var(--border-color); border-radius: 12px; display: flex; flex-direction: column; height: 160px; border-top-right-radius: 0;}
+        .chat-header { display: flex; justify-content: flex-end; }
+        .chat-header button { border-radius: 12px 12px 0 0; border-bottom: none; background: var(--surface); }
+
+        #emoji-bar { display: flex; justify-content: space-around; background: var(--surface); padding: 8px; border-bottom: 1px solid var(--border-color); font-size: 1.2rem; border-radius: 12px 0 0 0;}
         .emoji-btn { cursor: pointer; transition: 0.2s; user-select: none; }
         .emoji-btn:active { transform: scale(1.3); }
         #chat-messages { flex-grow: 1; overflow-y: auto; padding: 10px; font-size: 0.85rem; display: flex; flex-direction: column; gap: 6px; }
@@ -145,13 +139,6 @@
                 <h3>Request Sent!</h3>
                 <p>Waiting for the Host to approve...</p>
                 <button onclick="cancelJoinRequest()" class="danger" style="margin-top: 15px;">Cancel</button>
-            </div>
-        </div>
-
-        <div id="pause-overlay" class="overlay">
-            <div class="modal-box" style="border: 4px solid var(--accent);">
-                <h2 style="color: var(--accent); margin-top: 0;">Game Paused ⏸️</h2>
-                <p>Waiting for human players to reconnect to resume...</p>
             </div>
         </div>
 
@@ -198,6 +185,10 @@
             <button id="profile-btn" class="btn-outline" style="padding: 6px 12px; font-size: 0.8rem;">👤 Profile</button>
             <button id="sound-toggle" class="btn-outline" style="padding: 6px 12px; font-size: 0.8rem;">🔊 Sound: ON</button>
         </header>
+
+        <div id="pause-banner">
+            ⚠️ Player left! Game paused. Wait for reconnect or add a Bot.
+        </div>
 
         <div id="lobby-screen" class="screen">
             <div style="display: flex; justify-content: space-between; align-items: center;">
@@ -252,7 +243,7 @@
                 </div>
                 <div style="display: flex; justify-content: space-between; width: 100%; align-items: center;">
                     <p style="font-size: 0.85rem; margin: 0;">Vacancy: <span id="display-max-players" style="color: #10B981; font-weight: bold;">1/4</span></p>
-                    <button id="add-bot-btn" class="btn-outline" style="padding: 4px 10px; font-size: 0.75rem; display: none; color: white; border-color: rgba(255,255,255,0.3);">🤖 Add Bot</button>
+                    <button id="add-bot-btn" class="btn-outline" onclick="window.addBot()" style="padding: 4px 10px; font-size: 0.75rem; display: none; color: white; border-color: rgba(255,255,255,0.3);">🤖 Add Bot</button>
                 </div>
                 
                 <div class="room-actions">
@@ -278,7 +269,7 @@
             <ul id="player-list"></ul>
 
             <div id="chat-wrapper">
-                <div style="display: flex; justify-content: flex-end; margin-bottom: 5px;">
+                <div class="chat-header">
                     <button id="toggle-chat-btn" class="btn-outline" style="padding: 4px 10px; font-size: 0.75rem;">🔽 Hide Chat</button>
                 </div>
                 <div id="chat-box">
@@ -327,7 +318,7 @@
         let roomCode = ""; let roomMaxPlayers = 4; let isHost = false; let myRole = null;
         let playersData = {}; let currentRound = 1; let soundEnabled = true; let dialogueRevealed = false;
         let gameMaxRounds = 20; let gameStatus = 'lobby'; let lastVoteCount = 0;
-        let botTimeouts = []; let currentLastGuess = null;
+        let botTimeouts = {}; let botDialogueTimeouts = {}; let currentLastGuess = null;
 
         const roleEmojis = { OC: "👨‍⚖️", Daroga: "👮", Police: "🕵️", Chor: "🏃", DC: "🏛️", Army: "🪖" };
         const roles4 = [{name:"OC",pts:2000},{name:"Daroga",pts:1200},{name:"Police",pts:500},{name:"Chor",pts:0}];
@@ -442,13 +433,10 @@
             enterGameScreen();
         };
 
-        document.getElementById('add-bot-btn').onclick = () => {
+        window.addBot = function() {
             if (!isHost) return;
-            const currentBots = Object.values(playersData).filter(p => p.isBot).length;
-            const maxBots = roomMaxPlayers === 4 ? 3 : 5;
-            if (currentBots >= maxBots) return alert(`Maximum bots (${maxBots}) reached for this game size!`);
-            
-            if (Object.keys(playersData).length >= roomMaxPlayers) return alert("Room is full!");
+            const currentPlayersCount = Object.keys(playersData).length;
+            if (currentPlayersCount >= roomMaxPlayers) return alert("Room is full!");
 
             const botNames = ["Alpha", "Beta", "Gamma", "Delta", "Echo"];
             const bName = "Bot " + botNames[Math.floor(Math.random() * botNames.length)] + " " + Math.floor(Math.random() * 100);
@@ -509,7 +497,6 @@
             db.ref(`rooms/${roomCode}/info/hostId`).on('value', snap => {
                 isHost = (snap.val() === playerId);
                 if(isHost) monitorJoinRequests(); 
-                document.getElementById('add-bot-btn').style.display = (isHost && Object.keys(playersData).length < roomMaxPlayers && gameStatus === 'lobby') ? 'inline-block' : 'none';
             });
 
             db.ref(`rooms/${roomCode}/gameState/status`).on('value', snap => {
@@ -520,7 +507,6 @@
                 playersData = snap.val() || {};
                 const playerIds = Object.keys(playersData);
                 document.getElementById('display-max-players').innerText = `${playerIds.length}/${roomMaxPlayers}`;
-                document.getElementById('add-bot-btn').style.display = (isHost && playerIds.length < roomMaxPlayers && gameStatus === 'lobby') ? 'inline-block' : 'none';
 
                 db.ref(`rooms/${roomCode}/info/hostId`).once('value', hSnap => {
                     let humanIds = playerIds.filter(id => !playersData[id].isBot);
@@ -541,6 +527,10 @@
                 });
 
                 checkPauseState(); 
+                
+                // Bot Card auto-pick check
+                db.ref(`rooms/${roomCode}/cards`).once('value', cSnap => { if(cSnap.val()) checkBotsNeedCards(cSnap.val()); });
+
                 if (playerIds.length === roomMaxPlayers && isHost && gameStatus === 'lobby') hostDealsCards();
             });
 
@@ -548,9 +538,13 @@
             db.ref(`rooms/${roomCode}/dialogue`).on('value', snap => { if (snap.val()) document.getElementById('dialogue-box').innerHTML = snap.val(); });
             db.ref(`rooms/${roomCode}/convPhase`).on('value', snap => handleConversationPhase(snap.val()));
             
-            db.ref(`rooms/${roomCode}/cards`).on('value', snap => { if (snap.val()) renderCards(snap.val()); });
+            db.ref(`rooms/${roomCode}/cards`).on('value', snap => { 
+                if (snap.val()) {
+                    renderCards(snap.val());
+                    checkBotsNeedCards(snap.val()); // Sequential Bot Picker
+                }
+            });
 
-            // Listen for Card Guesses (Visual Shake animation)
             db.ref(`rooms/${roomCode}/lastGuess`).on('value', snap => {
                 currentLastGuess = snap.val();
                 applyLastGuessVisuals();
@@ -581,9 +575,15 @@
         }
 
         function checkPauseState() {
-            let activeCount = Object.keys(playersData).filter(id => playersData[id].status === 'online').length;
-            if(gameStatus === 'playing' && activeCount < roomMaxPlayers) document.getElementById('pause-overlay').classList.add('active');
-            else document.getElementById('pause-overlay').classList.remove('active');
+            let pCount = Object.keys(playersData).length;
+            const pauseBanner = document.getElementById('pause-banner');
+            if(gameStatus === 'playing' && pCount < roomMaxPlayers) {
+                pauseBanner.style.display = "block";
+                document.getElementById('add-bot-btn').style.display = isHost ? 'inline-block' : 'none';
+            } else {
+                pauseBanner.style.display = "none";
+                document.getElementById('add-bot-btn').style.display = 'none';
+            }
         }
 
         window.kickPlayer = function(uid) { if(confirm("Kick this player?")) db.ref(`rooms/${roomCode}/players/${uid}`).remove(); };
@@ -610,9 +610,12 @@
         };
         window.rejectPlayer = function(uid) { db.ref(`rooms/${roomCode}/requests/${uid}`).remove(); };
 
-        // --- Core Gameplay & Bots ---
+        // --- Core Gameplay & Safe Bot Picker ---
         function hostDealsCards() {
-            dialogueRevealed = false; botTimeouts.forEach(clearTimeout); botTimeouts = [];
+            dialogueRevealed = false; 
+            Object.values(botTimeouts).forEach(clearTimeout); botTimeouts = {};
+            Object.values(botDialogueTimeouts).forEach(clearTimeout); botDialogueTimeouts = {};
+            
             const activeRoles = roomMaxPlayers === 6 ? roles6 : roles4;
             const shuffled = [...activeRoles].sort(() => Math.random() - 0.5);
             const cardData = {};
@@ -624,27 +627,40 @@
             db.ref(`rooms/${roomCode}/dialogue`).set(`<strong>Round ${currentRound}/${gameMaxRounds}</strong><br/>Pick a card!`);
             db.ref(`rooms/${roomCode}/convPhase`).remove(); 
 
-            // Bot Picking
-            Object.keys(playersData).filter(id => playersData[id].isBot).forEach((bId, idx) => {
-                let pickDelay = Math.floor(Math.random() * 6000) + 4000; 
-                let t = setTimeout(() => {
-                    db.ref(`rooms/${roomCode}/cards`).once('value', snap => {
-                        let cData = snap.val(); if(!cData) return;
-                        let avail = Object.keys(cData).filter(k => !cData[k].owner);
-                        if(avail.length > 0 && !Object.values(cData).some(c => c.owner === bId)) {
-                            let rKey = avail[Math.floor(Math.random() * avail.length)];
-                            db.ref(`rooms/${roomCode}/cards/${rKey}`).update({ owner: bId }); playSound('flip');
-                        }
-                    });
-                }, pickDelay);
-                botTimeouts.push(t);
-
+            // Occasional Random Bot Chat
+            Object.keys(playersData).filter(id => playersData[id].isBot).forEach(bId => {
                 if(Math.random() < 0.25) {
                     setTimeout(() => {
                         db.ref(`rooms/${roomCode}/chat`).push({ sender: playersData[bId].name, text: botChatMsgs[Math.floor(Math.random()*botChatMsgs.length)] });
                     }, Math.random() * 3000 + 2000);
                 }
             });
+        }
+
+        // Sequential Bot Picker to Prevent Freezes
+        function checkBotsNeedCards(cardsData) {
+            if (!isHost || gameStatus !== 'playing') return;
+            let bots = Object.keys(playersData).filter(id => playersData[id].isBot);
+            let botsWithoutCards = bots.filter(bId => !Object.values(cardsData).some(c => c.owner === bId));
+            let avail = Object.keys(cardsData).filter(k => !cardsData[k].owner);
+
+            if (botsWithoutCards.length > 0 && avail.length > 0) {
+                let bId = botsWithoutCards[0]; // Process one at a time
+                if (!botTimeouts[bId]) {
+                    botTimeouts[bId] = setTimeout(() => {
+                        db.ref(`rooms/${roomCode}/cards`).once('value', snap => {
+                            let cData = snap.val(); if(!cData) return;
+                            let currentAvail = Object.keys(cData).filter(k => !cData[k].owner);
+                            if(currentAvail.length > 0 && !Object.values(cData).some(c => c.owner === bId)) {
+                                let rKey = currentAvail[Math.floor(Math.random() * currentAvail.length)];
+                                db.ref(`rooms/${roomCode}/cards/${rKey}`).update({ owner: bId });
+                                playSound('flip');
+                            }
+                            delete botTimeouts[bId];
+                        });
+                    }, Math.floor(Math.random() * 2000) + 1500); // 1.5s - 3.5s delay
+                }
+            }
         }
 
         function renderCards(cards) {
@@ -680,13 +696,13 @@
                     if (showRole) {
                         if (cardObj.owner === playerId) myRole = cardObj.role;
                         cardEl.innerHTML = `<div class="card-inner-text">
-                            <img src="${photoSrc}" class="card-avatar">
+                            <img src="${photoSrc}" class="card-avatar" onerror="this.src='https://api.dicebear.com/7.x/avataaars/svg?seed=${cardObj.owner}'">
                             <span style="font-size:0.85rem; color:var(--text-main); font-weight:700;">${roleStr}</span>
                             <span style="color:var(--primary); font-size: 0.8rem;">${cardObj.points} pts</span>
                         </div>`;
                     } else {
                         cardEl.innerHTML = `<div class="card-inner-text">
-                            <img src="${photoSrc}" class="card-avatar">
+                            <img src="${photoSrc}" class="card-avatar" onerror="this.src='https://api.dicebear.com/7.x/avataaars/svg?seed=${cardObj.owner}'">
                             <span style="font-size:0.85rem; color:var(--text-light)">${ownerName}</span>
                         </div>`;
                     }
@@ -701,7 +717,9 @@
 
             if (claimedCount === roomMaxPlayers && isHost) {
                 db.ref(`rooms/${roomCode}/convPhase`).once('value', snap => {
-                    if(!snap.exists()) db.ref(`rooms/${roomCode}/convPhase`).set('daroga_call');
+                    if(!snap.exists() && !dialogueRevealed) { // PREVENT REPEATING LOOP
+                        db.ref(`rooms/${roomCode}/convPhase`).set('daroga_call');
+                    }
                 });
             }
         }
@@ -709,7 +727,8 @@
         // --- INTERACTIVE CONVERSATION SYSTEM & BOTS ---
         function handleConversationPhase(phase) {
             const guessSec = document.getElementById('guess-section');
-            if (!phase) { guessSec.style.display = "none"; return; }
+            if (!phase || phase === 'ended') { guessSec.style.display = "none"; return; } // ENDED FIX
+            
             guessSec.style.display = "block";
 
             // Bot Dialogue Automation
@@ -720,13 +739,13 @@
                     const dBot = dId && playersData[dId]?.isBot; const pBot = pId && playersData[pId]?.isBot;
 
                     if (phase === 'daroga_call' && dBot) {
-                        setTimeout(() => advanceConv('police_reply', `<strong>👮 ${playersData[dId].name}:</strong> Police, police koun hai?`, false, true), 3000);
+                        botDialogueTimeouts['dc'] = setTimeout(() => advanceConv('police_reply', `<strong>👮 ${playersData[dId].name}:</strong> Police, police koun hai?`, false, true), 3000);
                     } else if (phase === 'police_reply' && pBot) {
-                        setTimeout(() => advanceConv('daroga_order', `<strong>🕵️ ${playersData[pId].name}:</strong> Hum hai!`, true, false), 3000);
+                        botDialogueTimeouts['pr'] = setTimeout(() => advanceConv('daroga_order', `<strong>🕵️ ${playersData[pId].name}:</strong> Hum hai!`, true, false), 3000);
                     } else if (phase === 'daroga_order' && dBot) {
-                        setTimeout(() => advanceConv('guess_time', `<strong>👮 ${playersData[dId].name}:</strong> Chor ko pakdo!`, true, false), 2000);
+                        botDialogueTimeouts['do'] = setTimeout(() => advanceConv('guess_time', `<strong>👮 ${playersData[dId].name}:</strong> Chor ko pakdo!`, true, false), 2000);
                     } else if (phase === 'guess_time' && pBot) {
-                        setTimeout(() => {
+                        botDialogueTimeouts['gt'] = setTimeout(() => {
                             let suspects = Object.keys(playersData).filter(id => id !== pId && id !== dId);
                             let randomSuspect = suspects[Math.floor(Math.random() * suspects.length)];
                             makeGuess(randomSuspect, pId);
@@ -737,18 +756,21 @@
 
             // Human UI
             if (phase === 'daroga_call') {
-                if (myRole === "Daroga") guessSec.innerHTML = `<h3 style="color:var(--accent); margin:0 0 10px 0;">You are Daroga 👮!</h3><button class="attention-btn" onclick="advanceConv('police_reply', '<strong>👮 ${playerName}:</strong> Police, police koun hai?', false, true)">Blow Whistle & Call Out Police</button>`;
-                else guessSec.innerHTML = `<p style="margin:0;">Waiting for Daroga to speak...</p>`;
+                if (myRole === "Daroga") {
+                    guessSec.innerHTML = `<h3 style="color:var(--accent); margin:0 0 10px 0;">You are Daroga 👮!</h3><button class="attention-btn" onclick="advanceConv('police_reply', '<strong>👮 ${playerName}:</strong> Police, police koun hai?', false, true)">Blow Whistle & Call Out Police</button>`;
+                } else guessSec.innerHTML = `<p style="margin:0;">Waiting for Daroga to speak...</p>`;
             } 
             else if (phase === 'police_reply') {
                 dialogueRevealed = true; db.ref(`rooms/${roomCode}/cards`).once('value', s=>renderCards(s.val()));
-                if (myRole === "Police") guessSec.innerHTML = `<h3 style="color:var(--primary); margin:0 0 10px 0;">You are Police 🕵️!</h3><button class="attention-btn" onclick="advanceConv('daroga_order', '<strong>🕵️ ${playerName}:</strong> Hum hai!', true, false)">Reply: Hum hai!</button>`;
-                else guessSec.innerHTML = `<p style="margin:0;">Waiting for Police to reply...</p>`;
+                if (myRole === "Police") {
+                    guessSec.innerHTML = `<h3 style="color:var(--primary); margin:0 0 10px 0;">You are Police 🕵️!</h3><button class="attention-btn" onclick="advanceConv('daroga_order', '<strong>🕵️ ${playerName}:</strong> Hum hai!', true, false)">Reply: Hum hai!</button>`;
+                } else guessSec.innerHTML = `<p style="margin:0;">Waiting for Police to reply...</p>`;
             } 
             else if (phase === 'daroga_order') {
                 dialogueRevealed = true; db.ref(`rooms/${roomCode}/cards`).once('value', s=>renderCards(s.val()));
-                if (myRole === "Daroga") guessSec.innerHTML = `<button class="attention-btn danger" onclick="advanceConv('guess_time', '<strong>👮 ${playerName}:</strong> Chor ko pakdo!', true, false)">Order Catch!</button>`;
-                else guessSec.innerHTML = `<p style="margin:0;">Waiting for Daroga's order...</p>`;
+                if (myRole === "Daroga") {
+                    guessSec.innerHTML = `<button class="attention-btn danger" onclick="advanceConv('guess_time', '<strong>👮 ${playerName}:</strong> Chor ko pakdo!', true, false)">Order Catch!</button>`;
+                } else guessSec.innerHTML = `<p style="margin:0;">Waiting for Daroga's order...</p>`;
             }
             else if (phase === 'guess_time') {
                 if (myRole === "Police") activatePoliceGuessing();
@@ -797,7 +819,9 @@
 
             document.getElementById('guess-section').style.display = "none";
             document.querySelectorAll('.suspect-glow').forEach(el => { el.classList.remove('suspect-glow'); el.onclick = null; });
-            if(isMyGuess || isHost) db.ref(`rooms/${roomCode}/convPhase`).remove(); 
+            
+            // FIX: Lock dialogue to 'ended' instead of removing so it doesn't repeat!
+            if(isMyGuess || isHost) db.ref(`rooms/${roomCode}/convPhase`).set('ended'); 
             
             db.ref(`rooms/${roomCode}/cards`).once('value', snap => {
                 const cards = Object.values(snap.val());
@@ -831,7 +855,7 @@
                         }
                     }
                     if(isMyGuess) myRole = null;
-                }, 6000); // Wait 6 seconds so people can enjoy the card animations!
+                }, 6000); 
             });
         }
 
