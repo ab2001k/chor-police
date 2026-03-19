@@ -171,6 +171,7 @@
         <div id="profile-overlay" class="overlay">
             <div class="modal-box">
                 <img id="profile-pic" src="" style="width: 80px; height: 80px; border-radius: 50%; display: none; margin: 0 auto 10px auto; border: 2px solid var(--primary); object-fit: cover;">
+                <h2 id="profile-name" style="margin: 0 0 5px 0;">Player</h2>
                 
                 <div style="display: flex; gap: 8px; margin-bottom: 10px;">
                     <input type="text" id="profile-name-input" placeholder="Change Name" maxlength="12" style="margin: 0; padding: 8px; font-size: 0.9rem;">
@@ -536,6 +537,7 @@
             db.ref(`rooms/${roomCode}/info/hostId`).on('value', snap => {
                 isHost = (snap.val() === playerId);
                 if(isHost) monitorJoinRequests(); 
+                document.getElementById('add-bot-btn').style.display = (isHost && Object.keys(playersData).length < roomMaxPlayers && gameStatus === 'lobby') ? 'inline-block' : 'none';
             });
 
             db.ref(`rooms/${roomCode}/gameState/status`).on('value', snap => {
@@ -547,6 +549,8 @@
                 const playerIds = Object.keys(playersData);
                 document.getElementById('display-max-players').innerText = `${playerIds.length}/${roomMaxPlayers}`;
                 
+                document.getElementById('add-bot-btn').style.display = (isHost && playerIds.length < roomMaxPlayers && gameStatus === 'lobby') ? 'inline-block' : 'none';
+
                 db.ref(`rooms/${roomCode}/info/hostId`).once('value', hSnap => {
                     let humanIds = playerIds.filter(id => !playersData[id].isBot);
                     if (humanIds.length > 0 && !humanIds.includes(hSnap.val()) && humanIds[0] === playerId) {
@@ -613,7 +617,6 @@
                 }
             });
 
-            // Specific sounds for Chor/Police
             if (currentLastGuess.correct) {
                 if (playerId === currentLastGuess.chorId) playSound('sad'); else playSound('win'); 
             } else {
@@ -622,7 +625,6 @@
                 else playSound('error'); 
             }
 
-            // Spawn emoji reaction on Chor's card
             if (currentLastGuess.chorId) {
                 let chorCard = document.querySelector(`.card[data-owner="${currentLastGuess.chorId}"]`);
                 if (chorCard && !chorCard.querySelector('.react-emoji')) {
@@ -645,7 +647,7 @@
             } else {
                 pauseBanner.style.display = "none";
                 document.getElementById('kick-offline-btn').style.display = 'none';
-                document.getElementById('add-bot-btn').style.display = 'none';
+                if (gameStatus !== 'lobby') document.getElementById('add-bot-btn').style.display = 'none';
             }
         }
 
@@ -697,7 +699,6 @@
             db.ref(`rooms/${roomCode}/dialogue`).set(`<strong>Round ${currentRound}/${gameMaxRounds}</strong><br/>Pick a card!`);
             db.ref(`rooms/${roomCode}/convPhase`).remove(); 
 
-            // Occasional Random Bot Chat
             Object.keys(playersData).filter(id => playersData[id].isBot).forEach(bId => {
                 if(Math.random() < 0.25) {
                     setTimeout(() => {
@@ -707,7 +708,6 @@
             });
         }
 
-        // Sequential Bot Picker to Prevent Freezes
         function checkBotsNeedCards(cardsData) {
             if (!isHost || gameStatus !== 'playing') return;
             let bots = Object.keys(playersData).filter(id => playersData[id].isBot);
@@ -786,7 +786,7 @@
 
             if (claimedCount === roomMaxPlayers && isHost) {
                 db.ref(`rooms/${roomCode}/convPhase`).once('value', snap => {
-                    if(!snap.exists() && !dialogueRevealed) { // Prevent repeating loop
+                    if(!snap.exists() && !dialogueRevealed) { 
                         db.ref(`rooms/${roomCode}/convPhase`).set('daroga_call');
                     }
                 });
@@ -814,9 +814,9 @@
                         botDialogueTimeouts['do'] = setTimeout(() => advanceConv('guess_time', `<strong>👮 ${playersData[dId].name}:</strong> Chor ko pakdo!`, true, false), 2000);
                     } else if (phase === 'guess_time' && pBot) {
                         botDialogueTimeouts['gt'] = setTimeout(() => {
-                            let suspects = Object.keys(playersData).filter(id => id !== pId && id !== dId);
+                            let suspects = Object.keys(playersData).filter(id => id !== pId && id !== dId && playersData[id].status === 'online');
                             let randomSuspect = suspects[Math.floor(Math.random() * suspects.length)];
-                            makeGuess(randomSuspect, pId);
+                            if(randomSuspect) makeGuess(randomSuspect, pId);
                         }, 4000);
                     }
                 });
