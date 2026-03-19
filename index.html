@@ -246,7 +246,7 @@
         <div id="game-screen" class="screen">
             <div id="room-info">
                 <div style="display: flex; justify-content: space-between; width: 100%; align-items: center;">
-                    <p>Room: <strong id="display-room-code">----</strong></p>
+                    <p>Room: <strong id="display-room-code">----</strong> <span style="cursor:pointer; margin-left:5px; font-size:1.2rem;" onclick="copyJustCode()">📋</span></p>
                     <button id="leaderboard-btn" class="btn-outline" style="padding: 4px 10px; font-size: 0.75rem; color: white; border-color: rgba(255,255,255,0.3);">📊 Standings</button>
                 </div>
                 <div style="display: flex; justify-content: space-between; width: 100%; align-items: center;">
@@ -385,7 +385,7 @@
                 osc.type = 'sawtooth'; osc.frequency.setValueAtTime(300, now); osc.frequency.exponentialRampToValueAtTime(100, now + 0.8); gain.gain.setValueAtTime(0.1, now); gain.gain.linearRampToValueAtTime(0, now + 0.8); osc.start(now); osc.stop(now + 0.8);
             }
         }
-        document.addEventListener('click', (e) => { if (e.target.tagName === 'BUTTON' || e.target.classList.contains('emoji-btn')) playSound('click'); });
+        document.addEventListener('click', (e) => { if (e.target.tagName === 'BUTTON' || e.target.classList.contains('emoji-btn') || e.target.tagName === 'SPAN') playSound('click'); });
         document.getElementById('sound-toggle').onclick = function() { soundEnabled = !soundEnabled; this.innerText = soundEnabled ? "🔊 Sound: ON" : "🔇 Sound: OFF"; toggleBGM(); };
 
         window.toggleCustomRound = function() {
@@ -430,6 +430,10 @@
             if (navigator.share) navigator.share({ title: 'Chor Police', text: `Play Chor Police Multiplayer with me!`, url: link });
             else { navigator.clipboard.writeText(link); alert("Website Link copied!"); }
         };
+
+        window.copyJustCode = function() {
+            navigator.clipboard.writeText(roomCode); alert("Room Code " + roomCode + " copied!");
+        }
 
         document.getElementById('profile-btn').onclick = () => {
             document.getElementById('profile-name-input').value = playerName;
@@ -528,7 +532,6 @@
             window.history.replaceState(null, '', `?room=${roomCode}`);
             document.getElementById('chat-messages').innerHTML = ""; 
             
-            // Initialize Reset for Vote Btn
             const voteBtn = document.getElementById('vote-end-btn');
             voteBtn.disabled = false; voteBtn.style.background = ''; voteBtn.innerText = 'Vote End';
             
@@ -544,16 +547,14 @@
             db.ref(`rooms/${roomCode}/info/hostId`).on('value', snap => {
                 isHost = (snap.val() === playerId);
                 if(isHost) monitorJoinRequests(); 
+                updateButtonsVisibility();
             });
 
             db.ref(`rooms/${roomCode}/gameState/status`).on('value', snap => {
                 if(snap.val()) { 
                     gameStatus = snap.val(); 
                     checkPauseState(); 
-                    
-                    if (isHost && gameStatus === 'lobby' && Object.keys(playersData).length === roomMaxPlayers) {
-                        setTimeout(hostDealsCards, 500); 
-                    }
+                    updateButtonsVisibility();
                 }
             });
 
@@ -562,6 +563,8 @@
                 const playerIds = Object.keys(playersData);
                 document.getElementById('display-max-players').innerText = `${playerIds.length}/${roomMaxPlayers}`;
                 
+                updateButtonsVisibility();
+
                 db.ref(`rooms/${roomCode}/info/hostId`).once('value', hSnap => {
                     let humanIds = playerIds.filter(id => !playersData[id].isBot);
                     if (humanIds.length > 0 && !humanIds.includes(hSnap.val()) && humanIds[0] === playerId) {
@@ -618,6 +621,12 @@
             });
         }
 
+        function updateButtonsVisibility() {
+            let pCount = Object.keys(playersData).length;
+            let isNotFull = pCount < roomMaxPlayers;
+            document.getElementById('add-bot-btn').style.display = (isHost && isNotFull && (gameStatus === 'lobby' || gameStatus === 'playing')) ? 'inline-block' : 'none';
+        }
+
         window.applyLastGuessVisuals = function() {
             if(!currentLastGuess) return;
             const allCardEls = document.querySelectorAll('.card');
@@ -653,11 +662,9 @@
                 pauseBanner.style.display = "block";
                 let hasOffline = Object.keys(playersData).some(id => playersData[id].status === 'offline');
                 document.getElementById('kick-offline-btn').style.display = (isHost && hasOffline) ? 'inline-block' : 'none';
-                document.getElementById('add-bot-btn').style.display = isHost ? 'inline-block' : 'none';
             } else {
                 pauseBanner.style.display = "none";
                 document.getElementById('kick-offline-btn').style.display = 'none';
-                if (gameStatus !== 'lobby') document.getElementById('add-bot-btn').style.display = 'none';
             }
         }
 
@@ -692,7 +699,6 @@
         };
         window.rejectPlayer = function(uid) { db.ref(`rooms/${roomCode}/requests/${uid}`).remove(); };
 
-        // Safely clear all bot timeouts
         function clearBotTimeouts() {
             Object.values(botTimeouts).forEach(clearTimeout); botTimeouts = {};
             Object.values(botDialogueTimeouts).forEach(clearTimeout); botDialogueTimeouts = {};
@@ -702,10 +708,6 @@
         function hostDealsCards() {
             dialogueRevealed = false; 
             clearBotTimeouts();
-            
-            // Reactivate Vote End Button cleanly
-            const voteBtn = document.getElementById('vote-end-btn');
-            voteBtn.disabled = false; voteBtn.style.background = ''; voteBtn.innerText = 'Vote End';
             
             const activeRoles = roomMaxPlayers === 6 ? roles6 : roles4;
             const shuffled = [...activeRoles].sort(() => Math.random() - 0.5);
@@ -815,8 +817,6 @@
         // --- INTERACTIVE CONVERSATION SYSTEM & BOTS ---
         function handleConversationPhase(phase) {
             const guessSec = document.getElementById('guess-section');
-            
-            // STRICT FREEZE PREVENTION: If phase is ended, clear timeouts and hide completely.
             if (!phase || phase === 'ended') { 
                 clearBotTimeouts();
                 guessSec.style.display = "none"; 
@@ -826,7 +826,7 @@
             guessSec.style.display = "block";
 
             if (isHost) {
-                clearBotTimeouts(); // Reset before setting new ones
+                clearBotTimeouts(); 
                 db.ref(`rooms/${roomCode}/cards`).once('value', snap => {
                     const cards = Object.values(snap.val() || {});
                     const dId = cards.find(c => c.role === 'Daroga')?.owner; const pId = cards.find(c => c.role === 'Police')?.owner;
@@ -942,8 +942,6 @@
                         if (currentRound >= gameMaxRounds) triggerEndGame();
                         else {
                             db.ref(`rooms/${roomCode}/gameState/round`).set(currentRound + 1);
-                            db.ref(`rooms/${roomCode}/cards`).remove();
-                            db.ref(`rooms/${roomCode}/dialogue`).set(`Round over! Preparing next round...`);
                             setTimeout(hostDealsCards, 2000); 
                         }
                     }
@@ -1001,9 +999,9 @@
         }
 
         window.playAgain = function() {
-            Object.keys(playersData).forEach(id => {
-                if(playersData[id]) db.ref(`rooms/${roomCode}/players/${id}/score`).set(0);
-            });
+            Object.keys(playersData).forEach(id => { if(playersData[id]) db.ref(`rooms/${roomCode}/players/${id}/score`).set(0); });
+            const voteBtn = document.getElementById('vote-end-btn');
+            voteBtn.disabled = false; voteBtn.style.background = ''; voteBtn.innerText = 'Vote End';
             db.ref(`rooms/${roomCode}/endVotes`).remove();
             db.ref(`rooms/${roomCode}/lastGuess`).remove();
             db.ref(`rooms/${roomCode}/dialogue`).set("Restarting match...");
@@ -1025,12 +1023,6 @@
             chatVisible = !chatVisible;
             document.getElementById('chat-box').style.display = chatVisible ? 'flex' : 'none';
             document.getElementById('toggle-chat-btn').innerText = chatVisible ? '🔽 Hide Chat' : '💬 Show Chat';
-        };
-
-        document.getElementById('copy-link-btn').onclick = () => { 
-            const link = window.location.origin + window.location.pathname + "?room=" + roomCode;
-            if (navigator.share) navigator.share({ title: 'Chor Police', text: `Join my room! Code: ${roomCode}`, url: link });
-            else { navigator.clipboard.writeText(link); alert("Link copied!"); }
         };
         
         document.getElementById('exit-btn').onclick = () => { 
