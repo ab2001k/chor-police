@@ -35,6 +35,7 @@
         button { background: var(--primary); color: white; border: none; padding: 10px 16px; border-radius: 10px; font-weight: 600; cursor: pointer; transition: 0.2s; font-family: inherit; }
         button:hover:not(:disabled) { background: var(--primary-hover); }
         button:active:not(:disabled) { transform: scale(0.95); }
+        button:disabled { opacity: 0.7; cursor: not-allowed; }
         button.danger { background: var(--accent); }
         button.danger:hover:not(:disabled) { background: var(--accent-hover); }
         .btn-outline { background: transparent; color: var(--text-main); border: 2px solid var(--border-color); }
@@ -138,7 +139,6 @@
 
     <div id="game-container">
         
-        <!-- AUTH OVERLAY -->
         <div id="auth-overlay" class="overlay">
             <div class="modal-box">
                 <h2 style="margin-top:0; color: var(--text-main);">🚓 Chor Police</h2>
@@ -152,7 +152,6 @@
             </div>
         </div>
 
-        <!-- WAITING OVERLAY -->
         <div id="waiting-overlay" class="overlay">
             <div class="modal-box">
                 <h3>Request Sent!</h3>
@@ -161,7 +160,6 @@
             </div>
         </div>
 
-        <!-- STANDINGS OVERLAY -->
         <div id="stats-overlay" class="overlay">
             <div class="modal-box">
                 <h2 style="margin-top:0; color: var(--primary);">📊 Live Standings</h2>
@@ -170,19 +168,16 @@
             </div>
         </div>
 
-        <!-- END GAME OVERLAY (New & Separated) -->
         <div id="end-game-overlay" class="overlay">
             <div class="modal-box" style="border: 4px solid var(--gold);">
                 <h1 style='color:var(--accent); margin:0 0 5px 0; font-size: 1.8rem;'>🎉 GAME OVER 🎉</h1>
                 <p style="color: var(--text-light); margin: 0 0 20px 0;">Final Standings</p>
                 <div id="final-scores-list" style="margin-bottom: 20px; text-align: left;"></div>
                 <div id="end-game-actions" style="display:flex; gap:10px; justify-content:center;">
-                    <!-- Populated by JS -->
-                </div>
+                    </div>
             </div>
         </div>
 
-        <!-- RULES OVERLAY -->
         <div id="rules-overlay" class="overlay">
             <div class="modal-box" style="text-align: left;">
                 <h2 style="margin-top:0; color: var(--text-main); text-align: center;">How to Play 📖</h2>
@@ -200,7 +195,6 @@
             </div>
         </div>
 
-        <!-- PROFILE OVERLAY -->
         <div id="profile-overlay" class="overlay">
             <div class="modal-box">
                 <img id="profile-pic" src="" style="width: 80px; height: 80px; border-radius: 50%; display: none; margin: 0 auto 10px auto; border: 2px solid var(--primary); object-fit: cover;">
@@ -227,12 +221,10 @@
             <button id="sound-toggle" class="btn-outline" style="padding: 6px 12px; font-size: 0.8rem; border-radius: 20px;">🔊 ON</button>
         </header>
 
-        <!-- UNOBTRUSIVE PAUSE BANNER -->
         <div id="pause-banner">
-            ⚠️ Player left! Game paused. Wait for reconnect or add a Bot.
+            ⚠️ Player left! Game paused. Add a Bot or wait for them.
         </div>
 
-        <!-- LOBBY SCREEN -->
         <div id="lobby-screen" class="screen">
             <div style="display: flex; justify-content: space-between; align-items: center;">
                 <h2 style="margin: 0;">Game Lobby</h2>
@@ -276,7 +268,6 @@
             </div>
         </div>
 
-        <!-- GAME SCREEN -->
         <div id="game-screen" class="screen">
             <div id="room-info">
                 <div style="display: flex; justify-content: space-between; width: 100%; align-items: center;">
@@ -358,7 +349,7 @@
         let playerPhoto = localStorage.getItem('cp_photo') || "https://api.dicebear.com/7.x/avataaars/svg?seed=" + playerId;
         localStorage.setItem('cp_playerId', playerId);
 
-        const defaultDescs = ["Sneaky Thief 🥷", "Master Detective 🕵️", "Always Daroga 👮", "Just chilling 😎"];
+        const defaultDescs = ["Sneaky Thief 🥷", "Master Detective 🕵️", "Always Daroga 👮", "Just chilling 😎", "Smooth Criminal 💼"];
         let playerDesc = localStorage.getItem('cp_desc') || defaultDescs[Math.floor(Math.random() * defaultDescs.length)];
         localStorage.setItem('cp_desc', playerDesc);
 
@@ -367,10 +358,12 @@
         let gameMaxRounds = 20; let gameStatus = 'lobby'; let lastVoteCount = 0;
         let botTimeouts = {}; let botDialogueTimeouts = {}; let currentLastGuess = null; let bgmInterval = null;
 
+        const scoreSvg = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>`;
+
         const roleEmojis = { OC: "👨‍⚖️", Daroga: "👮", Police: "🕵️", Chor: "🏃", DC: "🏛️", Army: "🪖", Businessman: "💼", Hacker: "💻" };
         const roles4 = [{name:"OC",pts:2000},{name:"Daroga",pts:1200},{name:"Police",pts:500},{name:"Chor",pts:0}];
         const roles6 = [{name:"DC",pts:2500},{name:"OC",pts:2000},{name:"Army",pts:1500},{name:"Daroga",pts:1200},{name:"Police",pts:500},{name:"Chor",pts:0}];
-        const roles8 = [{name:"Businessman",pts:3000},{name:"DC",pts:2500},{name:"OC",pts:2000},{name:"Army",pts:1500},{name:"Daroga",pts:1200},{name:"Hacker",pts:1000},{name:"Police",pts:500},{name:"Chor",pts:0}];
+        const roles8 = [{name:"DC",pts:2500},{name:"OC",pts:2000},{name:"Army",pts:1500},{name:"Daroga",pts:1200},{name:"Businessman",pts:1000},{name:"Hacker",pts:800},{name:"Police",pts:500},{name:"Chor",pts:0}];
         
         const botChatMsgs = ["Hi everyone! 👋", "Who is the Chor? 🤔", "I am definitely not the Chor 😎", "Good luck!", "👮🚓", "😂", "This is fun!", "Don't catch me!"];
 
@@ -383,14 +376,14 @@
 
         function toggleBGM() {
             if (soundEnabled && !bgmInterval) {
-                let notes = [261.63, 329.63, 392.00, 523.25]; // Soft Ambient Tone
+                let notes = [261.63, 329.63, 392.00, 523.25];
                 let i = 0;
                 bgmInterval = setInterval(() => {
                     if(!soundEnabled || audioCtx.state === 'suspended') return;
                     let osc = audioCtx.createOscillator(); let gain = audioCtx.createGain();
                     osc.type = 'sine'; osc.frequency.value = notes[i] / 2; 
-                    gain.gain.setValueAtTime(0.005, audioCtx.currentTime);
-                    gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 2);
+                    gain.gain.setValueAtTime(0.002, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.00005, audioCtx.currentTime + 2);
                     osc.connect(gain); gain.connect(audioCtx.destination);
                     osc.start(); osc.stop(audioCtx.currentTime + 2);
                     i = (i+1)%notes.length;
@@ -423,8 +416,9 @@
                 osc.type = 'sawtooth'; osc.frequency.setValueAtTime(300, now); osc.frequency.exponentialRampToValueAtTime(100, now + 0.8); gain.gain.setValueAtTime(0.1, now); gain.gain.linearRampToValueAtTime(0, now + 0.8); osc.start(now); osc.stop(now + 0.8);
             }
         }
+
         document.addEventListener('click', (e) => { if (e.target.tagName === 'BUTTON' || e.target.classList.contains('emoji-btn') || e.target.tagName === 'SPAN') playSound('click'); });
-        document.getElementById('sound-toggle').onclick = function() { soundEnabled = !soundEnabled; this.innerText = soundEnabled ? "🔊 Sound: ON" : "🔇 Sound: OFF"; toggleBGM(); };
+        document.getElementById('sound-toggle').onclick = function() { soundEnabled = !soundEnabled; this.innerText = soundEnabled ? "🔊 ON" : "🔇 OFF"; toggleBGM(); };
 
         window.toggleCustomRound = function() {
             const select = document.getElementById('round-count'); const customInput = document.getElementById('custom-round-input');
@@ -568,8 +562,10 @@
             document.getElementById('lobby-screen').classList.remove('active'); document.getElementById('game-screen').classList.add('active');
             document.getElementById('display-room-code').innerText = roomCode;
             
-            if(roomMaxPlayers === 8) document.getElementById('card-table').classList.add('eight-players');
-            else if(roomMaxPlayers === 6) document.getElementById('card-table').classList.add('six-players');
+            const table = document.getElementById('card-table');
+            table.classList.remove('six-players', 'eight-players');
+            if(roomMaxPlayers === 6) table.classList.add('six-players');
+            if(roomMaxPlayers === 8) table.classList.add('eight-players');
             
             window.history.replaceState(null, '', `?room=${roomCode}`);
             document.getElementById('chat-messages').innerHTML = ""; 
@@ -584,18 +580,50 @@
             listenToRoomData(); setupChatListener();
         }
 
+        // --- Interactive Smart Bot Chat Logic ---
+        function triggerBotChat(event, contextData = {}) {
+            if (!isHost) return;
+            let bots = Object.keys(playersData).filter(id => playersData[id].isBot);
+            bots.forEach(bId => {
+                if (Math.random() < 0.35) {
+                    setTimeout(() => {
+                        let msg = getBotPhrase(event, bId, contextData);
+                        if (msg) db.ref(`rooms/${roomCode}/chat`).push({ sender: playersData[bId].name, text: msg });
+                    }, Math.random() * 2500 + 1000);
+                }
+            });
+        }
+
+        function getBotPhrase(event, botId, data) {
+            const phrases = {
+                'start': ["Let's do this! 💪", "I hope I get King.", "Who wants to be Chor? 😂", "GLHF", "Ready!"],
+                'waiting_daroga': ["Daroga, hurry up! 👮", "Who has the whistle?", "Blow the whistle Daroga!"],
+                'waiting_police': ["Where is the Police? 🕵️", "Police is sleeping 💤", "Come on Police..."],
+            };
+            if (event === 'guess_reaction') {
+                if (data.suspect === botId) {
+                    return data.correct ? "Ok, you got me 😭" : "Are you blind? I'm not the Chor! 😡";
+                } else {
+                    return data.correct ? "Nice catch Police! 🎉" : "Police needs glasses 😂";
+                }
+            }
+            if (phrases[event]) return phrases[event][Math.floor(Math.random() * phrases[event].length)];
+            return null;
+        }
+
         // --- Room Data Listening ---
         function listenToRoomData() {
             db.ref(`rooms/${roomCode}/info/hostId`).on('value', snap => {
                 isHost = (snap.val() === playerId);
                 if(isHost) monitorJoinRequests(); 
-                document.getElementById('add-bot-btn').style.display = (isHost && Object.keys(playersData).length < roomMaxPlayers && gameStatus !== 'ended') ? 'inline-block' : 'none';
+                updateButtonsVisibility();
             });
 
             db.ref(`rooms/${roomCode}/gameState/status`).on('value', snap => {
                 if(snap.val()) { 
                     gameStatus = snap.val(); 
                     checkPauseState(); 
+                    updateButtonsVisibility();
                     
                     if (gameStatus === 'ended') {
                         document.getElementById('end-game-overlay').classList.add('active');
@@ -614,7 +642,7 @@
                 const playerIds = Object.keys(playersData);
                 document.getElementById('display-max-players').innerText = `${playerIds.length}/${roomMaxPlayers}`;
                 
-                document.getElementById('add-bot-btn').style.display = (isHost && playerIds.length < roomMaxPlayers && gameStatus !== 'ended') ? 'inline-block' : 'none';
+                updateButtonsVisibility();
 
                 db.ref(`rooms/${roomCode}/info/hostId`).once('value', hSnap => {
                     let humanIds = playerIds.filter(id => !playersData[id].isBot);
@@ -625,14 +653,13 @@
 
                 const list = document.getElementById('player-list'); list.innerHTML = ""; 
                 
-                // Sort live scoreboard by score
                 let sortedLive = playerIds.map(id => ({id, ...playersData[id]})).sort((a,b)=>(b.score||0)-(a.score||0));
                 
                 sortedLive.forEach(p => {
                     let photo = p.photo || "https://api.dicebear.com/7.x/avataaars/svg?seed="+p.id;
                     let dotClass = p.status === 'online' ? 'status-online' : 'status-offline';
                     let kickBtn = (isHost && p.id !== playerId) ? `<button class="danger" style="padding:4px 8px; font-size:0.7rem; margin-left:8px; border-radius:6px;" onclick="kickPlayer('${p.id}')">Kick</button>` : "";
-                    let botBadge = p.isBot ? " 🤖" : "";
+                    let botBadge = p.isBot ? " <span style='font-size:0.8rem;'>🤖</span>" : "";
                     let isMeClass = p.id === playerId ? "is-me" : "";
                     
                     list.innerHTML += `<li class="player-row ${isMeClass}">
@@ -641,7 +668,7 @@
                             <span><span class="status-dot ${dotClass}"></span> ${p.name}${botBadge} ${p.id===playerId ? "<strong>(You)</strong>" : ""}</span>
                         </div>
                         <div style="display:flex; align-items:center;">
-                            <span class="score-pill">${p.score || 0}</span> 
+                            <span class="score-pill">${scoreSvg} ${p.score || 0}</span> 
                             ${kickBtn}
                         </div>
                     </li>`;
@@ -666,7 +693,25 @@
 
             db.ref(`rooms/${roomCode}/lastGuess`).on('value', snap => {
                 currentLastGuess = snap.val();
-                applyLastGuessVisuals();
+                if (currentLastGuess) {
+                    applyLastGuessVisuals();
+                    triggerBotChat('guess_reaction', currentLastGuess);
+
+                    // Centralized Round Progression by Host Only
+                    if (isHost) {
+                        setTimeout(() => {
+                            if (gameStatus !== 'playing') return;
+                            if (currentRound >= gameMaxRounds) triggerEndGame();
+                            else {
+                                db.ref(`rooms/${roomCode}/gameState/round`).set(currentRound + 1);
+                                db.ref(`rooms/${roomCode}/cards`).remove(); // Wipe table
+                                db.ref(`rooms/${roomCode}/lastGuess`).remove(); // Reset guess
+                                setTimeout(hostDealsCards, 1500); 
+                            }
+                        }, 6000);
+                    }
+                    if (currentLastGuess.guesserId === playerId) myRole = null; 
+                }
             });
 
             db.ref(`rooms/${roomCode}/endVotes`).on('value', snap => {
@@ -681,6 +726,12 @@
                     if (voteCount >= humanCount && isHost) triggerEndGame();
                 } else { display.style.display = "none"; lastVoteCount = 0; }
             });
+        }
+
+        function updateButtonsVisibility() {
+            let pCount = Object.keys(playersData).length;
+            let isNotFull = pCount < roomMaxPlayers;
+            document.getElementById('add-bot-btn').style.display = (isHost && isNotFull && (gameStatus === 'lobby' || gameStatus === 'playing')) ? 'inline-block' : 'none';
         }
 
         window.applyLastGuessVisuals = function() {
@@ -716,8 +767,11 @@
             const pauseBanner = document.getElementById('pause-banner');
             if(gameStatus === 'playing' && activeCount < roomMaxPlayers) {
                 pauseBanner.style.display = "block";
+                let hasOffline = Object.keys(playersData).some(id => playersData[id].status === 'offline');
+                document.getElementById('kick-offline-btn').style.display = (isHost && hasOffline) ? 'inline-block' : 'none';
             } else {
                 pauseBanner.style.display = "none";
+                document.getElementById('kick-offline-btn').style.display = 'none';
             }
         }
 
@@ -737,7 +791,16 @@
                 if(Object.keys(reqs).length > 0) {
                     reqDiv.style.display = "block";
                     Object.values(reqs).forEach(req => {
-                        reqList.innerHTML += `<div class="request-item"><span><strong>${req.name}</strong></span> <div><button onclick="approvePlayer('${req.uid}', '${req.name}', '${req.photo}')" style="background:#10B981; padding:4px 8px;">Accept</button> <button onclick="rejectPlayer('${req.uid}')" class="danger" style="padding:4px 8px;">Reject</button></div></div>`;
+                        reqList.innerHTML += `<div class="request-item" style="display:flex; justify-content:space-between; align-items:center; background:white; padding:8px; border-radius:12px; margin-bottom:8px;">
+                            <div style="display:flex; align-items:center; gap:8px;">
+                                <img src="${req.photo}" style="width:30px; height:30px; border-radius:50%;">
+                                <strong>${req.name}</strong>
+                            </div> 
+                            <div style="display:flex; gap:5px;">
+                                <button onclick="approvePlayer('${req.uid}', '${req.name}', '${req.photo}')" style="background:#10B981; padding:6px 12px; font-size:0.8rem;">Accept</button> 
+                                <button onclick="rejectPlayer('${req.uid}')" class="danger" style="padding:6px 12px; font-size:0.8rem;">Reject</button>
+                            </div>
+                        </div>`;
                     });
                 } else reqDiv.style.display = "none";
             });
@@ -757,7 +820,7 @@
             Object.values(botDialogueTimeouts).forEach(clearTimeout); botDialogueTimeouts = {};
         }
 
-        // --- Core Gameplay & Safe Bot Picker ---
+        // --- Core Gameplay ---
         function hostDealsCards() {
             dialogueRevealed = false; 
             clearBotTimeouts();
@@ -768,18 +831,13 @@
             for(let i=0; i<roomMaxPlayers; i++) cardData[i] = { role: shuffled[i].name, points: shuffled[i].pts, owner: null };
             
             db.ref(`rooms/${roomCode}/lastGuess`).remove();
+            db.ref(`rooms/${roomCode}/convPhase`).remove(); 
+            
             db.ref(`rooms/${roomCode}/cards`).set(cardData);
             db.ref(`rooms/${roomCode}/gameState`).update({ status: 'playing' });
-            db.ref(`rooms/${roomCode}/dialogue`).set(`<strong>Round ${currentRound}/${gameMaxRounds}</strong><br/>Pick a card!`);
-            db.ref(`rooms/${roomCode}/convPhase`).remove(); 
+            db.ref(`rooms/${roomCode}/dialogue`).set(`<strong>Round ${currentRound}/${gameMaxRounds}</strong><br/>Cards dealt! Pick one quickly.`);
 
-            Object.keys(playersData).filter(id => playersData[id].isBot).forEach(bId => {
-                if(Math.random() < 0.25) {
-                    setTimeout(() => {
-                        db.ref(`rooms/${roomCode}/chat`).push({ sender: playersData[bId].name, text: botChatMsgs[Math.floor(Math.random()*botChatMsgs.length)] });
-                    }, Math.random() * 3000 + 2000);
-                }
-            });
+            triggerBotChat('start');
         }
 
         function checkBotsNeedCards(cardsData) {
@@ -833,20 +891,20 @@
                     const ownerName = ownerData ? ownerData.name : "Player";
                     const photoSrc = ownerData && ownerData.photo ? ownerData.photo : "https://api.dicebear.com/7.x/avataaars/svg?seed="+cardObj.owner;
                     
-                    let roleStr = `${roleEmojis[cardObj.role]} ${cardObj.role}`;
+                    let roleStr = `${roleEmojis[cardObj.role] || ""} ${cardObj.role}`;
                     let showRole = (cardObj.owner === playerId) || (dialogueRevealed && (cardObj.role === "Daroga" || cardObj.role === "Police"));
 
                     if (showRole) {
                         if (cardObj.owner === playerId) myRole = cardObj.role;
                         cardEl.innerHTML = `<div class="card-inner-text">
                             <img src="${photoSrc}" class="card-avatar" onerror="this.src='https://api.dicebear.com/7.x/avataaars/svg?seed=${cardObj.owner}'">
-                            <span style="font-size:0.85rem; color:var(--text-main); font-weight:700;">${roleStr}</span>
-                            <span style="color:var(--primary); font-size: 0.8rem; font-weight: bold;">${cardObj.points}</span>
+                            <span style="font-size:0.9rem; color:var(--text-main); font-weight:700;">${roleStr}</span>
+                            <span style="color:var(--primary); font-size: 0.8rem; font-weight:600;">${cardObj.points} pts</span>
                         </div>`;
                     } else {
                         cardEl.innerHTML = `<div class="card-inner-text">
                             <img src="${photoSrc}" class="card-avatar" onerror="this.src='https://api.dicebear.com/7.x/avataaars/svg?seed=${cardObj.owner}'">
-                            <span style="font-size:0.85rem; color:var(--text-light)">${ownerName}</span>
+                            <span style="font-size:0.85rem; color:var(--text-light); font-weight:500;">${ownerName}</span>
                         </div>`;
                     }
                 } else {
@@ -886,11 +944,11 @@
                     const dBot = dId && playersData[dId]?.isBot; const pBot = pId && playersData[pId]?.isBot;
 
                     if (phase === 'daroga_call' && dBot) {
-                        botDialogueTimeouts['dc'] = setTimeout(() => advanceConv('police_reply', `<strong>👮 ${playersData[dId].name}:</strong> Police, police koun hai?`, false, true), 3000);
+                        botDialogueTimeouts['dc'] = setTimeout(() => advanceConv('police_reply', `<strong>👮 ${playersData[dId].name}:</strong> Police, police koun hai?`, null, false, true), 3000);
                     } else if (phase === 'police_reply' && pBot) {
-                        botDialogueTimeouts['pr'] = setTimeout(() => advanceConv('daroga_order', `<strong>🕵️ ${playersData[pId].name}:</strong> Hum hai!`, true, false), 3000);
+                        botDialogueTimeouts['pr'] = setTimeout(() => advanceConv('daroga_order', `<strong>🕵️ ${playersData[pId].name}:</strong> Hum hai!`, null, true, false), 3000);
                     } else if (phase === 'daroga_order' && dBot) {
-                        botDialogueTimeouts['do'] = setTimeout(() => advanceConv('guess_time', `<strong>👮 ${playersData[dId].name}:</strong> Chor ko pakdo!`, true, false), 2000);
+                        botDialogueTimeouts['do'] = setTimeout(() => advanceConv('guess_time', `<strong>👮 ${playersData[dId].name}:</strong> Chor ko pakdo!`, null, true, false), 2000);
                     } else if (phase === 'guess_time' && pBot) {
                         botDialogueTimeouts['gt'] = setTimeout(() => {
                             let suspects = Object.keys(playersData).filter(id => id !== pId && id !== dId && playersData[id].status === 'online');
@@ -903,28 +961,29 @@
 
             if (phase === 'daroga_call') {
                 if (myRole === "Daroga") {
-                    guessSec.innerHTML = `<h3 style="color:var(--accent); margin:0 0 10px 0;">You are Daroga 👮!</h3><button class="attention-btn" onclick="advanceConv('police_reply', '<strong>👮 ${playerName}:</strong> Police, police koun hai?', false, true)">Blow Whistle & Call Out Police</button>`;
-                } else guessSec.innerHTML = `<p style="margin:0;">Waiting for Daroga to speak...</p>`;
+                    guessSec.innerHTML = `<h3 style="color:var(--accent); margin:0 0 10px 0;">You are Daroga 👮!</h3><button class="attention-btn" onclick="advanceConv('police_reply', '<strong>👮 ${playerName}:</strong> Police, police koun hai?', this, false, true)">Blow Whistle & Call Out Police</button>`;
+                } else guessSec.innerHTML = `<p style="margin:0;">Waiting for Daroga to blow the whistle...</p>`;
             } 
             else if (phase === 'police_reply') {
                 dialogueRevealed = true; db.ref(`rooms/${roomCode}/cards`).once('value', s=>renderCards(s.val()));
                 if (myRole === "Police") {
-                    guessSec.innerHTML = `<h3 style="color:var(--primary); margin:0 0 10px 0;">You are Police 🕵️!</h3><button class="attention-btn" onclick="advanceConv('daroga_order', '<strong>🕵️ ${playerName}:</strong> Hum hai!', true, false)">Reply: Hum hai!</button>`;
+                    guessSec.innerHTML = `<h3 style="color:var(--primary); margin:0 0 10px 0;">You are Police 🕵️!</h3><button class="attention-btn" onclick="advanceConv('daroga_order', '<strong>🕵️ ${playerName}:</strong> Hum hai!', this, true, false)">Reply: "Hum hai!"</button>`;
                 } else guessSec.innerHTML = `<p style="margin:0;">Waiting for Police to reply...</p>`;
             } 
             else if (phase === 'daroga_order') {
                 dialogueRevealed = true; db.ref(`rooms/${roomCode}/cards`).once('value', s=>renderCards(s.val()));
                 if (myRole === "Daroga") {
-                    guessSec.innerHTML = `<button class="attention-btn danger" onclick="advanceConv('guess_time', '<strong>👮 ${playerName}:</strong> Chor ko pakdo!', true, false)">Order Catch!</button>`;
+                    guessSec.innerHTML = `<button class="attention-btn danger" onclick="advanceConv('guess_time', '<strong>👮 ${playerName}:</strong> Chor ko pakdo!', this, true, false)">Order Catch!</button>`;
                 } else guessSec.innerHTML = `<p style="margin:0;">Waiting for Daroga's order...</p>`;
             }
             else if (phase === 'guess_time') {
                 if (myRole === "Police") activatePoliceGuessing();
-                else guessSec.innerHTML = `<p style="margin:0;">Police 🕵️ is searching for the Chor...</p>`;
+                else guessSec.innerHTML = `<p style="margin:0;">Police 🕵️ is deciding who the Chor is...</p>`;
             }
         }
 
-        window.advanceConv = function(nextPhase, dialogueText, playClick=false, playWhist=false) {
+        window.advanceConv = function(nextPhase, dialogueText, btnEl, playClick=false, playWhist=false) {
+            if(btnEl) btnEl.disabled = true; // Anti-spam click
             if(playWhist) playSound('whistle');
             db.ref(`rooms/${roomCode}/dialogue`).set(dialogueText);
             db.ref(`rooms/${roomCode}/convPhase`).set(nextPhase);
@@ -951,7 +1010,7 @@
                         const pPhoto = playersData[id].photo || "https://api.dicebear.com/7.x/avataaars/svg?seed="+id;
                         const btn = document.createElement('button');
                         btn.className = "guess-btn"; 
-                        btn.innerHTML = `<img src="${pPhoto}" style="width:20px; height:20px; border-radius:50%; vertical-align:middle; margin-right:5px; object-fit:cover;"> ${playersData[id].name}`;
+                        btn.innerHTML = `<img src="${pPhoto}" style="width:24px; height:24px; border-radius:50%; vertical-align:middle; margin-right:8px; object-fit:cover;"> ${playersData[id].name}`;
                         btn.onclick = () => makeGuess(id, playerId);
                         guessSec.appendChild(btn);
                     }
@@ -960,56 +1019,52 @@
         }
 
         function makeGuess(suspectId, guesserId) {
-            const isMyGuess = (guesserId === playerId);
-            const guesserName = playersData[guesserId].name;
-            const suspectName = playersData[suspectId].name;
+            const isBotGuess = playersData[guesserId].isBot;
+            const canUpdateState = (guesserId === playerId) || (isHost && isBotGuess);
 
             document.getElementById('guess-section').style.display = "none";
             document.querySelectorAll('.suspect-glow').forEach(el => { el.classList.remove('suspect-glow'); el.onclick = null; });
             
-            if(isMyGuess || isHost) db.ref(`rooms/${roomCode}/convPhase`).set('ended'); 
-            
-            db.ref(`rooms/${roomCode}/cards`).once('value', snap => {
-                const cards = Object.values(snap.val());
-                let suspectRole = cards.find(c => c.owner === suspectId)?.role;
-                let chorId = cards.find(c => c.role === "Chor")?.owner;
-
-                if (suspectRole === "Chor") {
-                    db.ref(`rooms/${roomCode}/dialogue`).set(`🕵️ <strong>${guesserName}</strong> guessed <strong>${suspectName}</strong>!<br/><br/>🎉 Correct! The Chor is caught! (+500 pts)`);
-                    if(isMyGuess || isHost) updateScore(guesserId, 500); 
-                } else {
-                    db.ref(`rooms/${roomCode}/dialogue`).set(`🕵️ <strong>${guesserName}</strong> guessed <strong>${suspectName}</strong>!<br/><br/>❌ Wrong! The Chor escaped! (+500 to Chor)`);
-                    if(isMyGuess || isHost) updateScore(chorId, 500); 
-                }
-
-                if(isMyGuess || isHost) {
-                    cards.forEach(c => { if (c.role !== "Police" && c.role !== "Chor" && c.owner) updateScore(c.owner, c.points); });
-                    db.ref(`rooms/${roomCode}/lastGuess`).set({ suspect: suspectId, correct: (suspectRole === "Chor"), chorId: chorId, guesserId: guesserId });
-                }
+            if(canUpdateState) {
+                db.ref(`rooms/${roomCode}/convPhase`).set('ended'); 
                 
-                dialogueRevealed = true;
-                db.ref(`rooms/${roomCode}/cards`).once('value', s=>renderCards(s.val()));
+                db.ref(`rooms/${roomCode}/cards`).once('value', snap => {
+                    const cards = Object.values(snap.val());
+                    let suspectRole = cards.find(c => c.owner === suspectId)?.role;
+                    let chorId = cards.find(c => c.role === "Chor")?.owner;
 
-                setTimeout(() => {
-                    if(isHost) {
-                        if (currentRound >= gameMaxRounds) triggerEndGame();
-                        else {
-                            db.ref(`rooms/${roomCode}/gameState/round`).set(currentRound + 1);
-                            db.ref(`rooms/${roomCode}/cards`).remove();
-                            setTimeout(hostDealsCards, 2000); 
-                        }
+                    const guesserName = playersData[guesserId].name;
+                    const suspectName = playersData[suspectId].name;
+
+                    if (suspectRole === "Chor") {
+                        db.ref(`rooms/${roomCode}/dialogue`).set(`🕵️ <strong>${guesserName}</strong> guessed <strong>${suspectName}</strong>!<br/><br/>🎉 Correct! The Chor is caught! (+500 pts)`);
+                        if (isHost) updateScore(guesserId, 500); 
+                    } else {
+                        db.ref(`rooms/${roomCode}/dialogue`).set(`🕵️ <strong>${guesserName}</strong> guessed <strong>${suspectName}</strong>!<br/><br/>❌ Wrong! The Chor escaped! (+500 to Chor)`);
+                        if (isHost) updateScore(chorId, 500); 
                     }
-                    if(isMyGuess) myRole = null;
-                }, 6000); 
-            });
+
+                    if (isHost) {
+                        cards.forEach(c => { if (c.role !== "Police" && c.role !== "Chor" && c.owner) updateScore(c.owner, c.points); });
+                    }
+                    
+                    db.ref(`rooms/${roomCode}/lastGuess`).set({ 
+                        suspect: suspectId, 
+                        correct: (suspectRole === "Chor"), 
+                        chorId: chorId, 
+                        guesserId: guesserId, 
+                        timestamp: Date.now() 
+                    });
+                });
+            }
         }
 
         // --- Leaderboard & End Game ---
         document.getElementById('leaderboard-btn').onclick = () => {
             let sorted = Object.keys(playersData).map(id => ({ id, name: playersData[id].name, score: playersData[id].score || 0 })).sort((a,b)=>b.score-a.score);
             const titles = ["👑 KING", "👸 QUEEN", "🛡️ MINISTER", "💂 SENAPATI", "💼 BANKER", "💻 HACKER", "🏃 CHOR", "🕵️ PRISONER"];
-            let html = `<h3 style="margin-top:0; color:var(--text-light);">Round ${currentRound} / ${gameMaxRounds}</h3>`;
-            sorted.forEach((p, i) => { html += `<p style="margin: 8px 0; font-size: 1.1rem;"><strong>${titles[i]||"CITIZEN"}</strong>: ${p.name} <span style="color:var(--primary)">(${p.score || 0})</span></p>`; });
+            let html = `<h3 style="margin-top:0; color:var(--text-light); text-transform: uppercase; font-size: 0.9rem;">Round ${currentRound} / ${gameMaxRounds}</h3>`;
+            sorted.forEach((p, i) => { html += `<p style="margin: 10px 0; font-size: 1.05rem; border-bottom:1px solid rgba(0,0,0,0.05); padding-bottom:5px;"><strong>${titles[i]||"CITIZEN"}</strong>: ${p.name} <span style="color:var(--primary); font-weight:600; float:right;">${p.score || 0} pts</span></p>`; });
             document.getElementById('stats-content').innerHTML = html;
             document.getElementById('stats-overlay').classList.add('active');
         };
@@ -1020,7 +1075,9 @@
                 let sorted = Object.keys(p).map(id => ({ id, name: p[id].name, score: p[id].score || 0, isBot: p[id].isBot })).sort((a,b)=>b.score-a.score);
                 const titles = ["👑 KING", "👸 QUEEN", "🛡️ MINISTER", "💂 SENAPATI", "💼 BANKER", "💻 HACKER", "🏃 CHOR", "🕵️ PRISONER"];
                 
-                let html = ``;
+                let html = `<div style="background: rgba(255, 255, 255, 0.9); padding: 24px; border-radius: 20px; border: 2px solid #FDE047; box-shadow: 0 10px 25px rgba(0,0,0,0.1);">
+                    <h2 style='color:#E11D48; margin:0 0 20px 0'>🎉 FINAL SCORE 🎉</h2>`;
+                
                 sorted.forEach((player, i) => { 
                     let cClass = i === 0 ? "final-player-card winner" : "final-player-card";
                     html += `
@@ -1033,31 +1090,30 @@
                         <div class="final-score-val">${player.score} pts</div>
                     </div>`; 
                 });
+                html += `</div>`;
                 
-                document.getElementById('final-scores-list').innerHTML = html;
-                
-                let actionHtml = '';
                 if (isHost) {
-                    actionHtml = `
-                        <button onclick="window.playAgain()" style="padding: 12px 20px;">🔄 Play Again</button>
-                        <button class="danger" onclick="window.location.reload()" style="padding: 12px 20px; background:#7F1D1D;">🏠 Home</button>
-                    `;
+                    html += `<div style="margin-top:20px; display:flex; gap:10px; justify-content:center;">
+                        <button onclick="window.playAgain()" style="border-radius: 20px; padding: 12px 20px;">🔄 Play Again</button>
+                        <button class="danger" onclick="window.location.reload()" style="border-radius: 20px; padding: 12px 20px; background:#7F1D1D;">🏠 Home</button>
+                    </div>`;
                 } else {
-                    actionHtml = `
-                        <button class="danger" onclick="window.location.reload()" style="padding: 12px 20px; background:#7F1D1D;">🏠 Home</button>
-                    `;
+                    html += `<div style="margin-top:20px; display:flex; gap:10px; justify-content:center;">
+                        <button class="danger" onclick="window.location.reload()" style="border-radius: 20px; padding: 12px 20px; background:#7F1D1D;">🏠 Home</button>
+                    </div>`;
                 }
-                document.getElementById('end-game-actions').innerHTML = actionHtml;
 
                 const winner = sorted[0];
                 if(!winner.isBot) db.ref(`users/${winner.id}/stats/wins`).once('value', s => db.ref(`users/${winner.id}/stats/wins`).set((s.val()||0)+1));
                 sorted.forEach(player => { if(!player.isBot) db.ref(`users/${player.id}/stats/lifetimeScore`).once('value', s => db.ref(`users/${player.id}/stats/lifetimeScore`).set((s.val()||0)+player.score)); });
 
+                db.ref(`rooms/${roomCode}/dialogue`).set(html);
                 db.ref(`rooms/${roomCode}/gameState/status`).set('ended');
                 playSound('win');
             });
         }
 
+        // Fixed Restart Function
         window.playAgain = function() {
             Object.keys(playersData).forEach(id => { if(playersData[id]) db.ref(`rooms/${roomCode}/players/${id}/score`).set(0); });
             
@@ -1066,20 +1122,18 @@
             
             db.ref(`rooms/${roomCode}/endVotes`).remove();
             db.ref(`rooms/${roomCode}/lastGuess`).remove();
+            db.ref(`rooms/${roomCode}/convPhase`).remove(); 
             db.ref(`rooms/${roomCode}/cards`).remove(); 
-            db.ref(`rooms/${roomCode}/convPhase`).remove();
-            db.ref(`rooms/${roomCode}/dialogue`).set("Shuffling cards for a new match... 🃏");
             
-            document.getElementById('end-game-overlay').classList.remove('active');
+            dialogueRevealed = false; 
             
-            setTimeout(() => {
-                db.ref(`rooms/${roomCode}/gameState/round`).set(1);
-                db.ref(`rooms/${roomCode}/gameState/status`).set('lobby');
-            }, 1500);
+            db.ref(`rooms/${roomCode}/dialogue`).set("Restarting match...");
+            db.ref(`rooms/${roomCode}/gameState/round`).set(1);
+            db.ref(`rooms/${roomCode}/gameState/status`).set('lobby');
         };
 
         function updateScore(id, pts) { db.ref(`rooms/${roomCode}/players/${id}/score`).once('value', s => db.ref(`rooms/${roomCode}/players/${id}/score`).set((s.val()||0)+pts)); }
-        
+
         // --- Controls ---
         document.getElementById('vote-end-btn').onclick = function() {
             this.disabled = true; this.style.background = '#94A3B8'; this.innerText = 'Voted';
@@ -1094,26 +1148,42 @@
             document.getElementById('toggle-chat-btn').innerText = chatVisible ? '🔽 Hide Chat' : '💬 Show Chat';
         };
 
-        document.getElementById('copy-link-btn').onclick = () => { 
-            const link = window.location.origin + window.location.pathname + "?room=" + roomCode;
-            const msg = `Play Chor Police Multiplayer with me! 🔥 Join here: ${link}`;
-            if (navigator.share) navigator.share({ title: 'Chor Police', text: msg });
-            else { navigator.clipboard.writeText(msg); alert("Link copied!"); }
-        };
-        
         document.getElementById('exit-btn').onclick = () => { 
             db.ref(`rooms/${roomCode}/players/${playerId}`).remove(); 
             db.ref(`rooms/${roomCode}/endVotes/${playerId}`).remove(); 
             window.location.reload(); 
         };
 
-        // --- Chat ---
+        // --- Chat with Cooldown Protection ---
         const chatInput = document.getElementById('chat-input');
-        window.sendQuickEmoji = function(emoji) { db.ref(`rooms/${roomCode}/chat`).push({ sender: playerName, text: emoji }); }
-        
+        let lastChatTime = 0;
+
+        function canSendChat() {
+            const now = Date.now();
+            if (now - lastChatTime < 3000) {
+                const btn = document.getElementById('send-chat-btn');
+                let oldHtml = btn.innerHTML;
+                btn.innerHTML = "⏳";
+                btn.disabled = true;
+                setTimeout(() => { btn.innerHTML = oldHtml; btn.disabled = false; }, 1500);
+                return false;
+            }
+            lastChatTime = now;
+            return true;
+        }
+
+        window.sendQuickEmoji = function(emoji) { 
+            if(!canSendChat()) return;
+            db.ref(`rooms/${roomCode}/chat`).push({ sender: playerName, text: emoji, senderId: playerId }); 
+        }
+
         function sendChat() {
             const text = chatInput.value.trim();
-            if (text && playerName) { db.ref(`rooms/${roomCode}/chat`).push({ sender: playerName, text: text }); chatInput.value = ""; }
+            if (text && playerName) { 
+                if(!canSendChat()) return;
+                db.ref(`rooms/${roomCode}/chat`).push({ sender: playerName, text: text, senderId: playerId }); 
+                chatInput.value = ""; 
+            }
         }
         document.getElementById('send-chat-btn').onclick = sendChat;
         chatInput.onkeypress = e => { if (e.key === 'Enter') sendChat(); };
@@ -1122,7 +1192,7 @@
             db.ref(`rooms/${roomCode}/chat`).on('child_added', snap => {
                 const msg = snap.val(); const box = document.getElementById('chat-messages');
                 
-                const pureEmojis = ['👍', '😂', '😎', '😡', '🚓', '💼'];
+                const pureEmojis = ['👍', '😂', '😎', '😡', '🚓', '😭', '🎉', '🤦‍♂️', '💼'];
                 if (pureEmojis.includes(msg.text)) {
                     let floatEl = document.createElement('div');
                     floatEl.className = 'floating-emoji'; floatEl.innerText = msg.text;
@@ -1130,8 +1200,14 @@
                     setTimeout(() => floatEl.remove(), 2000);
                 }
 
+                let isMe = msg.senderId === playerId;
                 let mClass = msg.sender === "System" ? "style='background: #FFF1F2; color: #E11D48; margin: 5px auto; text-align: center; width: 90%;'" : "";
-                box.innerHTML += `<div class="chat-msg" ${mClass}><strong>${msg.sender}:</strong> ${msg.text}</div>`;
+                let classAppend = isMe ? "me" : "";
+
+                box.innerHTML += `<div class="chat-msg ${classAppend}" ${mClass}>
+                    ${!isMe && msg.sender !== "System" ? `<strong>${msg.sender}</strong>` : ""}
+                    ${msg.text}
+                </div>`;
                 box.scrollTop = box.scrollHeight;
             });
         }
