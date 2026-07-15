@@ -8,8 +8,10 @@
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2220%22 fill=%22%23020617%22/><text x=%2250%22 y=%2254%22 font-family=%22Arial%22 font-size=%2250%22 font-weight=%22bold%22 fill=%22white%22 text-anchor=%22middle%22 dominant-baseline=%22middle%22>CP</text></svg>">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
+    <!-- LINK TO CSS -->
     <link rel="stylesheet" href="style.css">
     
+    <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-database-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-auth-compat.js"></script>
@@ -19,6 +21,7 @@
 
     <div id="game-container">
         
+        <!-- AUTH OVERLAY -->
         <div id="auth-overlay" class="overlay">
             <div class="modal-box">
                 <h2 style="margin-top:0; color: var(--text-main);">🚓 Chor Police</h2>
@@ -32,6 +35,7 @@
             </div>
         </div>
 
+        <!-- WAITING OVERLAY -->
         <div id="waiting-overlay" class="overlay">
             <div class="modal-box">
                 <h3>Request Sent!</h3>
@@ -40,6 +44,7 @@
             </div>
         </div>
 
+        <!-- STANDINGS OVERLAY -->
         <div id="stats-overlay" class="overlay">
             <div class="modal-box">
                 <h2 style="margin-top:0; color: var(--primary);">📊 Live Standings</h2>
@@ -48,16 +53,19 @@
             </div>
         </div>
 
+        <!-- END GAME OVERLAY -->
         <div id="end-game-overlay" class="overlay">
             <div class="modal-box" style="border: 4px solid var(--gold);">
                 <h1 style='color:var(--accent); margin:0 0 5px 0; font-size: 1.8rem;'>🎉 GAME OVER 🎉</h1>
                 <p style="color: var(--text-light); margin: 0 0 20px 0;">Final Standings</p>
                 <div id="final-scores-list" style="margin-bottom: 20px; text-align: left;"></div>
                 <div id="end-game-actions" style="display:flex; gap:10px; justify-content:center;">
-                    </div>
+                    <!-- Populated by JS -->
+                </div>
             </div>
         </div>
 
+        <!-- RULES OVERLAY -->
         <div id="rules-overlay" class="overlay">
             <div class="modal-box" style="text-align: left;">
                 <h2 style="margin-top:0; color: var(--text-main); text-align: center;">How to Play 📖</h2>
@@ -75,14 +83,19 @@
             </div>
         </div>
 
+        <!-- PROFILE OVERLAY -->
         <div id="profile-overlay" class="overlay">
             <div class="modal-box">
-                <img id="profile-pic" src="" style="width: 80px; height: 80px; border-radius: 50%; display: none; margin: 0 auto 10px auto; border: 2px solid var(--primary); object-fit: cover;">
+                <div style="position: relative; width: 80px; height: 80px; margin: 0 auto 15px auto;">
+                    <img id="profile-pic" src="" style="width: 100%; height: 100%; border-radius: 50%; display: none; border: 2px solid var(--primary); object-fit: cover;">
+                    <button id="random-avatar-btn" style="position: absolute; bottom: -5px; right: -5px; padding: 4px; border-radius: 50%; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 5px rgba(0,0,0,0.2);" title="Change Avatar">🎲</button>
+                </div>
+                
                 <h2 id="profile-name" style="margin: 0 0 5px 0;">Player</h2>
                 
                 <div style="display: flex; gap: 8px; margin-bottom: 10px;">
                     <input type="text" id="profile-name-input" placeholder="Change Name" maxlength="12" style="margin: 0; padding: 8px; font-size: 0.9rem;">
-                    <button id="rename-btn" style="padding: 8px 12px; font-size: 0.85rem;">Save</button>
+                    <button id="profile-rename-btn" style="padding: 8px 12px; font-size: 0.85rem;">Save</button>
                 </div>
                 
                 <div style="margin-bottom: 15px;">
@@ -101,14 +114,21 @@
             <button id="sound-toggle" class="btn-outline" style="padding: 6px 12px; font-size: 0.8rem; border-radius: 20px;">🔊 ON</button>
         </header>
 
+        <!-- UNOBTRUSIVE PAUSE BANNER -->
         <div id="pause-banner">
             ⚠️ Player left! Game paused. Wait for reconnect or add a Bot.
         </div>
 
+        <!-- LOBBY SCREEN -->
         <div id="lobby-screen" class="screen">
             <div style="display: flex; justify-content: space-between; align-items: center;">
                 <h2 style="margin: 0;">Game Lobby</h2>
                 <button class="btn-outline" onclick="document.getElementById('rules-overlay').classList.add('active')" style="padding: 4px 8px; font-size: 0.75rem; border-radius: 20px;">📖 Rules</button>
+            </div>
+            
+            <div style="display: flex; gap: 10px;">
+                <input type="text" id="lobby-name-input" placeholder="Your Name" maxlength="12" style="margin: 0;">
+                <button id="lobby-rename-btn" style="white-space: nowrap;">Update</button>
             </div>
 
             <div class="card-panel">
@@ -148,6 +168,7 @@
             </div>
         </div>
 
+        <!-- GAME SCREEN -->
         <div id="game-screen" class="screen">
             <div id="room-info">
                 <div style="display: flex; justify-content: space-between; width: 100%; align-items: center;">
@@ -208,6 +229,7 @@
         </div>
     </div>
 
+    <!-- LINK TO JAVASCRIPT -->
     <script src="game.js"></script>
 </body>
 </html>
