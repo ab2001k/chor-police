@@ -1,4 +1,4 @@
-// --- Firebase Config (Maintained) ---
+// --- Firebase Config ---
 const firebaseConfig = {
     apiKey: "AIzaSyBWT6w0EsRYm_Cd2P6JmeQlQjZpNK07V0Y",
     authDomain: "chorpolicegame-8c330.firebaseapp.com",
@@ -203,7 +203,7 @@ window.addBot = function() {
     const currentPlayersCount = Object.keys(playersData).length;
     if (currentPlayersCount >= roomMaxPlayers) return alert("Room is full!");
 
-    const botNames = ["Alpha", "Beta", "Gamma", "Delta", "Echo"];
+    const botNames = ["Alpha", "Beta", "Gamma", "Delta", "Echo", "Zeta", "Omega"];
     const bName = "Bot " + botNames[Math.floor(Math.random() * botNames.length)] + " " + Math.floor(Math.random() * 100);
     const bId = "bot_" + Math.random().toString(36).substr(2, 9);
     const bPhoto = "https://api.dicebear.com/7.x/bottts/svg?seed=" + bId;
@@ -787,7 +787,6 @@ window.playAgain = function() {
     db.ref(`rooms/${roomCode}/convPhase`).remove(); 
     db.ref(`rooms/${roomCode}/cards`).remove(); 
     
-    hasTriggeredDialogue = false; 
     dialogueRevealed = false; 
     
     db.ref(`rooms/${roomCode}/dialogue`).set("Restarting match...");
