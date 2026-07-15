@@ -33,7 +33,6 @@ const scoreSvg = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" st
 const roleEmojis = { OC: "👨‍⚖️", Daroga: "👮", Police: "🕵️", Chor: "🏃", DC: "🏛️", Army: "🪖", Businessman: "💼", Hacker: "💻" };
 const roles4 = [{name:"OC",pts:2000},{name:"Daroga",pts:1200},{name:"Police",pts:500},{name:"Chor",pts:0}];
 const roles6 = [{name:"DC",pts:2500},{name:"OC",pts:2000},{name:"Army",pts:1500},{name:"Daroga",pts:1200},{name:"Police",pts:500},{name:"Chor",pts:0}];
-// Added 8 player roles config
 const roles8 = [
     {name:"DC",pts:2500},{name:"OC",pts:2000},{name:"Army",pts:1500},{name:"Daroga",pts:1200},
     {name:"Businessman",pts:1000},{name:"Hacker",pts:800},{name:"Police",pts:500},{name:"Chor",pts:0}
@@ -96,6 +95,23 @@ window.toggleCustomRound = function() {
     customInput.style.display = select.value === 'custom' ? 'block' : 'none';
 }
 
+// --- Central Name Update Handler ---
+function applyNameChange(newName) {
+    if (newName) {
+        playerName = newName; 
+        localStorage.setItem('cp_playerName', playerName);
+        if (roomCode && playersData[playerId]) {
+            db.ref(`rooms/${roomCode}/players/${playerId}/name`).set(playerName);
+        }
+        document.getElementById('profile-name').innerText = playerName;
+        document.getElementById('profile-name-input').value = playerName;
+        alert("Name updated successfully!");
+    }
+}
+
+// Bind to the Profile menu rename button ONLY
+document.getElementById('profile-rename-btn').onclick = () => applyNameChange(document.getElementById('profile-name-input').value.trim());
+
 // --- Auth & Profile Management ---
 if (playerName) {
     document.getElementById('lobby-screen').classList.add('active');
@@ -141,14 +157,18 @@ document.getElementById('random-avatar-btn').onclick = () => {
 
 document.getElementById('lobby-share-btn').onclick = () => { 
     const link = window.location.origin + window.location.pathname;
-    if (navigator.share) navigator.share({ title: 'Chor Police', text: `Play Chor Police Multiplayer with me!`, url: link });
-    else { navigator.clipboard.writeText(link); alert("Website Link copied!"); }
+    const msg = `Play Chor Police Multiplayer with me! 🔥 Join here: ${link}`;
+    if (navigator.share) navigator.share({ title: 'Chor Police', text: msg });
+    else { navigator.clipboard.writeText(msg); alert("Message & Link copied! Paste it in WhatsApp."); }
 };
+
 document.getElementById('copy-link-btn').onclick = () => { 
     const link = window.location.origin + window.location.pathname + "?room=" + roomCode;
-    if (navigator.share) navigator.share({ title: 'Chor Police', text: `Join my Chor Police room! Code: ${roomCode}`, url: link });
-    else { navigator.clipboard.writeText(link); alert("Game Link copied! Send it to your friends."); }
+    const msg = `Join my Chor Police room! Code: ${roomCode} 🔥 Link: ${link}`;
+    if (navigator.share) navigator.share({ title: 'Chor Police', text: msg });
+    else { navigator.clipboard.writeText(msg); alert("Game Link copied! Send it to your friends."); }
 };
+
 window.copyJustCode = function() {
     navigator.clipboard.writeText(roomCode); alert("Room Code " + roomCode + " copied!");
 }
@@ -171,22 +191,16 @@ document.getElementById('edit-desc-btn').onclick = () => {
     if(newDesc && newDesc.trim()) { playerDesc = newDesc.trim(); localStorage.setItem('cp_desc', playerDesc); document.getElementById('profile-desc').innerText = `"${playerDesc}"`; }
 };
 
-document.getElementById('rename-btn').onclick = () => {
-    const newName = document.getElementById('profile-name-input').value.trim();
-    if (newName) {
-        playerName = newName; localStorage.setItem('cp_playerName', playerName);
-        if (roomCode) db.ref(`rooms/${roomCode}/players/${playerId}/name`).set(playerName);
-        document.getElementById('profile-name').innerText = playerName;
-        alert("Name updated!");
-    }
-};
-
 const urlParams = new URLSearchParams(window.location.search);
 if (urlParams.get('room')) document.getElementById('room-code-input').value = urlParams.get('room').toUpperCase();
 
 // --- Create / Join / Bots ---
 document.getElementById('create-btn').onclick = () => {
-    if (!playerName) return alert("Please set your name in Profile!");
+    if (!playerName) {
+        alert("Please set your name in your Profile first!");
+        document.getElementById('profile-overlay').classList.add('active');
+        return;
+    }
     roomMaxPlayers = parseInt(document.getElementById('player-count').value);
     let rCountVal = document.getElementById('round-count').value;
     gameMaxRounds = rCountVal === 'custom' ? (parseInt(document.getElementById('custom-round-input').value) || 20) : parseInt(rCountVal);
@@ -212,7 +226,11 @@ window.addBot = function() {
 };
 
 document.getElementById('join-btn').onclick = () => {
-    if (!playerName) return alert("Please set your name in Profile!");
+    if (!playerName) {
+        alert("Please set your name in your Profile first!");
+        document.getElementById('profile-overlay').classList.add('active');
+        return;
+    }
     const codeInput = document.getElementById('room-code-input').value.trim().toUpperCase();
     if (codeInput.length !== 6) return alert("Enter a valid 6-digit code.");
     
@@ -273,7 +291,7 @@ function triggerBotChat(event, contextData = {}) {
         if (Math.random() < 0.35) { // 35% chance to participate per event
             setTimeout(() => {
                 let msg = getBotPhrase(event, bId, contextData);
-                if (msg) db.ref(`rooms/${roomCode}/chat`).push({ sender: playersData[bId].name, text: msg });
+                if (msg) db.ref(`rooms/${roomCode}/chat`).push({ sender: playersData[bId].name, text: msg, senderId: bId });
             }, Math.random() * 2500 + 1000);
         }
     });
@@ -312,6 +330,12 @@ function listenToRoomData() {
             gameStatus = snap.val(); 
             checkPauseState(); 
             updateButtonsVisibility();
+            
+            if (gameStatus === 'ended') {
+                document.getElementById('end-game-overlay').classList.add('active');
+            } else {
+                document.getElementById('end-game-overlay').classList.remove('active');
+            }
         }
     });
 
@@ -330,23 +354,36 @@ function listenToRoomData() {
         });
 
         const list = document.getElementById('player-list'); list.innerHTML = ""; 
-        playerIds.forEach(id => {
-            let photo = playersData[id].photo || "https://api.dicebear.com/7.x/avataaars/svg?seed="+id;
-            let dotClass = playersData[id].status === 'online' ? 'status-online' : 'status-offline';
-            let kickBtn = (isHost && id !== playerId) ? `<button class="danger" style="padding:4px 8px; font-size:0.7rem; margin-left:8px; border-radius:12px;" onclick="kickPlayer('${id}')">Kick</button>` : "";
-            let botBadge = playersData[id].isBot ? " <span style='font-size:0.8rem;'>🤖</span>" : "";
-            let isMeText = id === playerId ? " <span style='color:var(--text-light); font-size:0.8rem;'>(You)</span>" : "";
+        
+        // Sort live scoreboard by score
+        let sortedLive = playerIds.map(id => ({id, ...playersData[id]})).sort((a,b)=>(b.score||0)-(a.score||0));
+        
+        sortedLive.forEach(p => {
+            let photo = p.photo || "https://api.dicebear.com/7.x/avataaars/svg?seed="+p.id;
+            let dotClass = p.status === 'online' ? 'status-online' : 'status-offline';
+            let kickBtn = (isHost && p.id !== playerId) ? `<button class="danger" style="padding:4px 8px; font-size:0.7rem; margin-left:8px; border-radius:6px;" onclick="kickPlayer('${p.id}')">Kick</button>` : "";
+            let botBadge = p.isBot ? " <span style='font-size:0.8rem;'>🤖</span>" : "";
+            let isMeClass = p.id === playerId ? "is-me" : "";
             
-            list.innerHTML += `<li style="display:flex; align-items:center; gap:12px;">
-                <img src="${photo}" style="width:36px; height:36px; border-radius:50%; object-fit:cover; border:2px solid var(--border-color);">
-                <span style="flex-grow:1; font-weight:600;"><span class="status-dot ${dotClass}"></span> ${playersData[id].name}${botBadge}${isMeText}</span> 
-                <span class="score-pill">${scoreSvg} ${playersData[id].score || 0}</span> ${kickBtn}</li>`;
+            list.innerHTML += `<li class="player-row ${isMeClass}">
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <img src="${photo}" style="width:30px; height:30px; border-radius:50%; object-fit:cover; border:1px solid #ccc;">
+                    <span><span class="status-dot ${dotClass}"></span> ${p.name}${botBadge} ${p.id===playerId ? "<strong>(You)</strong>" : ""}</span>
+                </div>
+                <div style="display:flex; align-items:center;">
+                    <span class="score-pill">${scoreSvg} ${p.score || 0}</span> 
+                    ${kickBtn}
+                </div>
+            </li>`;
         });
 
         checkPauseState(); 
         db.ref(`rooms/${roomCode}/cards`).once('value', cSnap => { if(cSnap.val()) checkBotsNeedCards(cSnap.val()); });
 
-        if (playerIds.length === roomMaxPlayers && isHost && gameStatus === 'lobby') hostDealsCards();
+        // Safe Game Starter
+        if (playerIds.length === roomMaxPlayers && isHost && gameStatus === 'lobby') {
+            hostDealsCards();
+        }
     });
 
     db.ref(`rooms/${roomCode}/gameState/round`).on('value', snap => { if (snap.val()) currentRound = snap.val(); });
@@ -374,9 +411,11 @@ function listenToRoomData() {
                     if (currentRound >= gameMaxRounds) triggerEndGame();
                     else {
                         db.ref(`rooms/${roomCode}/gameState/round`).set(currentRound + 1);
-                        setTimeout(hostDealsCards, 2000); 
+                        db.ref(`rooms/${roomCode}/cards`).remove(); 
+                        db.ref(`rooms/${roomCode}/lastGuess`).remove(); 
+                        setTimeout(hostDealsCards, 1500); 
                     }
-                }, 6000);
+                }, 6000); // 6 second transition delay so players see exactly what happened
             }
             if (currentLastGuess.guesserId === playerId) myRole = null; 
         }
@@ -490,6 +529,8 @@ function clearBotTimeouts() {
 
 // --- Core Gameplay ---
 function hostDealsCards() {
+    if (gameStatus === 'playing') return; // Anti-double deal safeguard
+    
     dialogueRevealed = false; 
     clearBotTimeouts();
     
@@ -613,14 +654,12 @@ function handleConversationPhase(phase) {
             const dId = cards.find(c => c.role === 'Daroga')?.owner; const pId = cards.find(c => c.role === 'Police')?.owner;
             const dBot = dId && playersData[dId]?.isBot; const pBot = pId && playersData[pId]?.isBot;
 
-            if (phase === 'daroga_call') {
-                if (dBot) botDialogueTimeouts['dc'] = setTimeout(() => advanceConv('police_reply', `<strong>👮 ${playersData[dId].name}:</strong> Police, police koun hai?`, false, true), 3000);
-                else triggerBotChat('waiting_daroga');
-            } else if (phase === 'police_reply') {
-                if (pBot) botDialogueTimeouts['pr'] = setTimeout(() => advanceConv('daroga_order', `<strong>🕵️ ${playersData[pId].name}:</strong> Hum hai!`, true, false), 3000);
-                else triggerBotChat('waiting_police');
+            if (phase === 'daroga_call' && dBot) {
+                botDialogueTimeouts['dc'] = setTimeout(() => advanceConv('police_reply', `<strong>👮 ${playersData[dId].name}:</strong> Police, police koun hai?`, null, false, true), 3000);
+            } else if (phase === 'police_reply' && pBot) {
+                botDialogueTimeouts['pr'] = setTimeout(() => advanceConv('daroga_order', `<strong>🕵️ ${playersData[pId].name}:</strong> Hum hai!`, null, true, false), 3000);
             } else if (phase === 'daroga_order' && dBot) {
-                botDialogueTimeouts['do'] = setTimeout(() => advanceConv('guess_time', `<strong>👮 ${playersData[dId].name}:</strong> Chor ko pakdo!`, true, false), 2000);
+                botDialogueTimeouts['do'] = setTimeout(() => advanceConv('guess_time', `<strong>👮 ${playersData[dId].name}:</strong> Chor ko pakdo!`, null, true, false), 2000);
             } else if (phase === 'guess_time' && pBot) {
                 botDialogueTimeouts['gt'] = setTimeout(() => {
                     let suspects = Object.keys(playersData).filter(id => id !== pId && id !== dId && playersData[id].status === 'online');
@@ -633,19 +672,19 @@ function handleConversationPhase(phase) {
 
     if (phase === 'daroga_call') {
         if (myRole === "Daroga") {
-            guessSec.innerHTML = `<h3 style="color:var(--accent); margin:0 0 10px 0;">You are Daroga 👮!</h3><button class="attention-btn" onclick="advanceConv('police_reply', '<strong>👮 ${playerName}:</strong> Police, police koun hai?', false, true)">Blow Whistle & Call Out Police</button>`;
+            guessSec.innerHTML = `<h3 style="color:var(--accent); margin:0 0 10px 0;">You are Daroga 👮!</h3><button class="attention-btn" onclick="advanceConv('police_reply', '<strong>👮 ${playerName}:</strong> Police, police koun hai?', this, false, true)">Blow Whistle & Call Out Police</button>`;
         } else guessSec.innerHTML = `<p style="margin:0;">Waiting for Daroga to blow the whistle...</p>`;
     } 
     else if (phase === 'police_reply') {
         dialogueRevealed = true; db.ref(`rooms/${roomCode}/cards`).once('value', s=>renderCards(s.val()));
         if (myRole === "Police") {
-            guessSec.innerHTML = `<h3 style="color:var(--primary); margin:0 0 10px 0;">You are Police 🕵️!</h3><button class="attention-btn" onclick="advanceConv('daroga_order', '<strong>🕵️ ${playerName}:</strong> Hum hai!', true, false)">Reply: "Hum hai!"</button>`;
+            guessSec.innerHTML = `<h3 style="color:var(--primary); margin:0 0 10px 0;">You are Police 🕵️!</h3><button class="attention-btn" onclick="advanceConv('daroga_order', '<strong>🕵️ ${playerName}:</strong> Hum hai!', this, true, false)">Reply: "Hum hai!"</button>`;
         } else guessSec.innerHTML = `<p style="margin:0;">Waiting for Police to reply...</p>`;
     } 
     else if (phase === 'daroga_order') {
         dialogueRevealed = true; db.ref(`rooms/${roomCode}/cards`).once('value', s=>renderCards(s.val()));
         if (myRole === "Daroga") {
-            guessSec.innerHTML = `<button class="attention-btn danger" onclick="advanceConv('guess_time', '<strong>👮 ${playerName}:</strong> Chor ko pakdo!', true, false)">Order Catch!</button>`;
+            guessSec.innerHTML = `<button class="attention-btn danger" onclick="advanceConv('guess_time', '<strong>👮 ${playerName}:</strong> Chor ko pakdo!', this, true, false)">Order Catch!</button>`;
         } else guessSec.innerHTML = `<p style="margin:0;">Waiting for Daroga's order...</p>`;
     }
     else if (phase === 'guess_time') {
@@ -654,7 +693,8 @@ function handleConversationPhase(phase) {
     }
 }
 
-window.advanceConv = function(nextPhase, dialogueText, playClick=false, playWhist=false) {
+window.advanceConv = function(nextPhase, dialogueText, btnEl, playClick=false, playWhist=false) {
+    if(btnEl) btnEl.disabled = true;
     if(playWhist) playSound('whistle');
     db.ref(`rooms/${roomCode}/dialogue`).set(dialogueText);
     db.ref(`rooms/${roomCode}/convPhase`).set(nextPhase);
@@ -690,46 +730,53 @@ function activatePoliceGuessing() {
 }
 
 function makeGuess(suspectId, guesserId) {
-    const isMyGuess = (guesserId === playerId);
-    const guesserName = playersData[guesserId].name;
-    const suspectName = playersData[suspectId].name;
+    const isBotGuess = playersData[guesserId].isBot;
+    const canUpdateState = (guesserId === playerId) || (isHost && isBotGuess);
 
     document.getElementById('guess-section').style.display = "none";
     document.querySelectorAll('.suspect-glow').forEach(el => { el.classList.remove('suspect-glow'); el.onclick = null; });
     
-    if(isMyGuess || isHost) db.ref(`rooms/${roomCode}/convPhase`).set('ended'); 
-    
-    db.ref(`rooms/${roomCode}/cards`).once('value', snap => {
-        const cards = Object.values(snap.val());
-        let suspectRole = cards.find(c => c.owner === suspectId)?.role;
-        let chorId = cards.find(c => c.role === "Chor")?.owner;
-
-        if (suspectRole === "Chor") {
-            db.ref(`rooms/${roomCode}/dialogue`).set(`🕵️ <strong>${guesserName}</strong> guessed <strong>${suspectName}</strong>!<br/><br/>🎉 Correct! The Chor is caught! (+500 pts)`);
-            if(isMyGuess || isHost) updateScore(guesserId, 500); 
-        } else {
-            db.ref(`rooms/${roomCode}/dialogue`).set(`🕵️ <strong>${guesserName}</strong> guessed <strong>${suspectName}</strong>!<br/><br/>❌ Wrong! The Chor escaped! (+500 to Chor)`);
-            if(isMyGuess || isHost) updateScore(chorId, 500); 
-        }
-
-        if(isMyGuess || isHost) {
-            cards.forEach(c => { if (c.role !== "Police" && c.role !== "Chor" && c.owner) updateScore(c.owner, c.points); });
-            
-            db.ref(`rooms/${roomCode}/lastGuess`).set({ 
-                suspect: suspectId, correct: (suspectRole === "Chor"), 
-                chorId: chorId, guesserId: guesserId, timestamp: Date.now()
-            });
-        }
+    if(canUpdateState) {
+        db.ref(`rooms/${roomCode}/convPhase`).set('ended'); 
         
-        dialogueRevealed = true;
-        db.ref(`rooms/${roomCode}/cards`).once('value', s=>renderCards(s.val()));
-    });
+        db.ref(`rooms/${roomCode}/cards`).once('value', snap => {
+            const cards = Object.values(snap.val());
+            let suspectRole = cards.find(c => c.owner === suspectId)?.role;
+            let chorId = cards.find(c => c.role === "Chor")?.owner;
+
+            const guesserName = playersData[guesserId].name;
+            const suspectName = playersData[suspectId].name;
+
+            if (suspectRole === "Chor") {
+                db.ref(`rooms/${roomCode}/dialogue`).set(`🕵️ <strong>${guesserName}</strong> guessed <strong>${suspectName}</strong>!<br/><br/>🎉 Correct! The Chor is caught! (+500 pts)`);
+                if (isHost) updateScore(guesserId, 500); 
+            } else {
+                db.ref(`rooms/${roomCode}/dialogue`).set(`🕵️ <strong>${guesserName}</strong> guessed <strong>${suspectName}</strong>!<br/><br/>❌ Wrong! The Chor escaped! (+500 to Chor)`);
+                if (isHost) updateScore(chorId, 500); 
+            }
+
+            if (isHost) {
+                cards.forEach(c => { if (c.role !== "Police" && c.role !== "Chor" && c.owner) updateScore(c.owner, c.points); });
+                
+                db.ref(`rooms/${roomCode}/lastGuess`).set({ 
+                    suspect: suspectId, 
+                    correct: (suspectRole === "Chor"), 
+                    chorId: chorId, 
+                    guesserId: guesserId, 
+                    timestamp: Date.now() 
+                });
+            }
+            
+            dialogueRevealed = true;
+            db.ref(`rooms/${roomCode}/cards`).once('value', s=>renderCards(s.val()));
+        });
+    }
 }
 
 // --- Leaderboard & End Game ---
 document.getElementById('leaderboard-btn').onclick = () => {
     let sorted = Object.keys(playersData).map(id => ({ id, name: playersData[id].name, score: playersData[id].score || 0 })).sort((a,b)=>b.score-a.score);
-    const titles = ["👑 KING", "👸 QUEEN", "🛡️ MINISTER", "💂 SENAPATI", "🏃 CHOR", "🕵️ PRISONER", "🚶 CITIZEN", "🚶 CITIZEN"];
+    const titles = ["👑 KING", "👸 QUEEN", "🛡️ MINISTER", "💂 SENAPATI", "💼 BANKER", "💻 HACKER", "🏃 CHOR", "🕵️ PRISONER"];
     let html = `<h3 style="margin-top:0; color:var(--text-light); text-transform: uppercase; font-size: 0.9rem;">Round ${currentRound} / ${gameMaxRounds}</h3>`;
     sorted.forEach((p, i) => { html += `<p style="margin: 10px 0; font-size: 1.05rem; border-bottom:1px solid rgba(0,0,0,0.05); padding-bottom:5px;"><strong>${titles[i]||"CITIZEN"}</strong>: ${p.name} <span style="color:var(--primary); font-weight:600; float:right;">${p.score || 0} pts</span></p>`; });
     document.getElementById('stats-content').innerHTML = html;
@@ -740,48 +787,53 @@ function triggerEndGame() {
     db.ref(`rooms/${roomCode}/players`).once('value', snap => {
         const p = snap.val();
         let sorted = Object.keys(p).map(id => ({ id, name: p[id].name, score: p[id].score || 0, isBot: p[id].isBot })).sort((a,b)=>b.score-a.score);
-        const titles = ["👑 KING", "👸 QUEEN", "🛡️ MINISTER", "💂 SENAPATI", "🏃 CHOR", "🕵️ PRISONER", "🚶 CITIZEN", "🚶 CITIZEN"];
+        const titles = ["👑 KING", "👸 QUEEN", "🛡️ MINISTER", "💂 SENAPATI", "💼 BANKER", "💻 HACKER", "🏃 CHOR", "🕵️ PRISONER"];
         
-        let html = `<div style="background: rgba(255, 255, 255, 0.9); padding: 24px; border-radius: 20px; border: 2px solid #FDE047; box-shadow: 0 10px 25px rgba(0,0,0,0.1);">
-            <h2 style='color:#E11D48; margin:0 0 20px 0'>🎉 FINAL SCORE 🎉</h2>`;
-        
+        let html = ``;
         sorted.forEach((player, i) => { 
-            html += `<p style="margin: 8px 0; font-size: 1.1rem; border-bottom: 1px solid #f1f1f1; padding-bottom: 8px;">
-                <strong>${titles[i]||"CITIZEN"}</strong><br>
-                ${player.name} <span style="color:var(--primary); font-weight:700;">(${player.score} pts)</span>
-            </p>`; 
+            let cClass = i === 0 ? "final-player-card winner" : "final-player-card";
+            html += `
+            <div class="${cClass}">
+                <div class="final-rank">#${i+1}</div>
+                <div style="flex-grow:1;">
+                    <div class="final-title">${titles[i]||"CITIZEN"}</div>
+                    <div style="font-weight:600;">${player.name}</div>
+                </div>
+                <div class="final-score-val">${player.score} pts</div>
+            </div>`; 
         });
-        html += `</div>`;
         
+        document.getElementById('final-scores-list').innerHTML = html;
+        
+        let actionHtml = '';
         if (isHost) {
-            html += `<div style="margin-top:20px; display:flex; gap:10px; justify-content:center;">
-                <button onclick="window.playAgain()" style="border-radius: 20px; padding: 12px 20px;">Play Again</button>
-                <button class="danger" onclick="window.location.reload()" style="border-radius: 20px; padding: 12px 20px;">Exit to Home</button>
-            </div>`;
+            actionHtml = `
+                <button onclick="window.playAgain()" style="padding: 12px 20px;">🔄 Play Again</button>
+                <button class="danger" onclick="window.location.reload()" style="padding: 12px 20px; background:#7F1D1D;">🏠 Home</button>
+            `;
         } else {
-            html += `<div style="margin-top:20px; display:flex; gap:10px; justify-content:center;">
-                <button class="danger" onclick="window.location.reload()" style="border-radius: 20px; padding: 12px 20px;">Exit to Home</button>
-            </div>`;
+            actionHtml = `
+                <button class="danger" onclick="window.location.reload()" style="padding: 12px 20px; background:#7F1D1D;">🏠 Home</button>
+            `;
         }
+        document.getElementById('end-game-actions').innerHTML = actionHtml;
 
         const winner = sorted[0];
         if(!winner.isBot) db.ref(`users/${winner.id}/stats/wins`).once('value', s => db.ref(`users/${winner.id}/stats/wins`).set((s.val()||0)+1));
         sorted.forEach(player => { if(!player.isBot) db.ref(`users/${player.id}/stats/lifetimeScore`).once('value', s => db.ref(`users/${player.id}/stats/lifetimeScore`).set((s.val()||0)+player.score)); });
 
-        db.ref(`rooms/${roomCode}/dialogue`).set(html);
         db.ref(`rooms/${roomCode}/gameState/status`).set('ended');
         playSound('win');
     });
 }
 
-// Fixed Restart Function (Clearing out all old traces)
+// Fixed Restart Function
 window.playAgain = function() {
     Object.keys(playersData).forEach(id => { if(playersData[id]) db.ref(`rooms/${roomCode}/players/${id}/score`).set(0); });
     
     const voteBtn = document.getElementById('vote-end-btn');
     voteBtn.disabled = false; voteBtn.style.background = ''; voteBtn.innerText = 'Vote End';
     
-    // Deep wipe of state to prevent overlapping visual errors
     db.ref(`rooms/${roomCode}/endVotes`).remove();
     db.ref(`rooms/${roomCode}/lastGuess`).remove();
     db.ref(`rooms/${roomCode}/convPhase`).remove(); 
@@ -791,7 +843,7 @@ window.playAgain = function() {
     
     db.ref(`rooms/${roomCode}/dialogue`).set("Restarting match...");
     db.ref(`rooms/${roomCode}/gameState/round`).set(1);
-    db.ref(`rooms/${roomCode}/gameState/status`).set('lobby');
+    db.ref(`rooms/${roomCode}/gameState/status`).set('lobby'); // Instantly sets lobby so hostDealsCards picks it up smoothly
 };
 
 function updateScore(id, pts) { db.ref(`rooms/${roomCode}/players/${id}/score`).once('value', s => db.ref(`rooms/${roomCode}/players/${id}/score`).set((s.val()||0)+pts)); }
@@ -800,7 +852,7 @@ function updateScore(id, pts) { db.ref(`rooms/${roomCode}/players/${id}/score`).
 document.getElementById('vote-end-btn').onclick = function() {
     this.disabled = true; this.style.background = '#94A3B8'; this.innerText = 'Voted';
     db.ref(`rooms/${roomCode}/endVotes/${playerId}`).set(true);
-    db.ref(`rooms/${roomCode}/chat`).push({ sender: "System", text: `${playerName} voted to end early.` });
+    db.ref(`rooms/${roomCode}/chat`).push({ sender: "System", text: `${playerName} voted to end early.`, senderId: 'sys' });
 };
 
 let chatVisible = true;
