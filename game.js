@@ -38,6 +38,17 @@ const roles8 = [
     {name:"Businessman",pts:1000},{name:"Hacker",pts:800},{name:"Police",pts:500},{name:"Chor",pts:0}
 ];
 
+// --- Theme System ---
+const savedTheme = localStorage.getItem('cp_theme') || 'default';
+document.body.className = savedTheme === 'default' ? '' : savedTheme;
+document.getElementById('theme-select').value = savedTheme;
+
+document.getElementById('theme-select').addEventListener('change', function(e) {
+    const theme = e.target.value;
+    localStorage.setItem('cp_theme', theme);
+    document.body.className = theme === 'default' ? '' : theme;
+});
+
 // --- Sound System & Ambient BGM ---
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 document.body.addEventListener('click', () => { 
@@ -154,6 +165,41 @@ document.getElementById('random-avatar-btn').onclick = () => {
     if (roomCode && playersData[playerId]) db.ref(`rooms/${roomCode}/players/${playerId}`).update({ photo: playerPhoto });
     playSound('click');
 };
+
+// Device Avatar Upload with Compression
+document.getElementById('avatar-upload').addEventListener('change', function(e) {
+    if(e.target.files && e.target.files[0]) {
+        const file = e.target.files[0];
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            const img = new Image();
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                const MAX_SIZE = 120; // Keep it small to avoid Firebase Realtime DB bloating
+                let width = img.width;
+                let height = img.height;
+                if (width > height) { if (width > MAX_SIZE) { height *= MAX_SIZE / width; width = MAX_SIZE; } } 
+                else { if (height > MAX_SIZE) { width *= MAX_SIZE / height; height = MAX_SIZE; } }
+                
+                canvas.width = width; canvas.height = height;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, width, height);
+                const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
+                
+                playerPhoto = dataUrl;
+                localStorage.setItem('cp_photo', playerPhoto);
+                document.getElementById('profile-pic').src = playerPhoto;
+                
+                if (roomCode && playersData[playerId]) {
+                    db.ref(`rooms/${roomCode}/players/${playerId}`).update({ photo: playerPhoto });
+                }
+                if (playerId && auth.currentUser) db.ref(`users/${playerId}/profile`).update({ photo: playerPhoto });
+            }
+            img.src = event.target.result;
+        }
+        reader.readAsDataURL(file);
+    }
+});
 
 document.getElementById('lobby-share-btn').onclick = () => { 
     const link = window.location.origin + window.location.pathname;
@@ -397,19 +443,28 @@ function listenToRoomData() {
         }
     });
 
+    // BUG FIX AREA: Proper Round Progression
     db.ref(`rooms/${roomCode}/lastGuess`).on('value', snap => {
         currentLastGuess = snap.val();
         if (currentLastGuess) {
             applyLastGuessVisuals();
-            
-            // Allow bots to react contextually
             triggerBotChat('guess_reaction', currentLastGuess);
+
+            // Auto-trigger Scoreboard Visibility for 4 seconds for all players
+            setTimeout(() => {
+                if (currentRound < gameMaxRounds) {
+                    document.getElementById('leaderboard-btn').click();
+                    setTimeout(() => document.getElementById('stats-overlay').classList.remove('active'), 4000);
+                }
+            }, 1500);
 
             if (isHost) {
                 setTimeout(() => {
                     if (gameStatus !== 'playing') return;
                     if (currentRound >= gameMaxRounds) triggerEndGame();
                     else {
+                        // FIX: Change status to 'dealing' to unlock `hostDealsCards` check
+                        db.ref(`rooms/${roomCode}/gameState/status`).set('dealing'); 
                         db.ref(`rooms/${roomCode}/gameState/round`).set(currentRound + 1);
                         db.ref(`rooms/${roomCode}/cards`).remove(); 
                         db.ref(`rooms/${roomCode}/lastGuess`).remove(); 
@@ -827,7 +882,6 @@ function triggerEndGame() {
     });
 }
 
-// Fixed Restart Function
 window.playAgain = function() {
     Object.keys(playersData).forEach(id => { if(playersData[id]) db.ref(`rooms/${roomCode}/players/${id}/score`).set(0); });
     
@@ -843,7 +897,7 @@ window.playAgain = function() {
     
     db.ref(`rooms/${roomCode}/dialogue`).set("Restarting match...");
     db.ref(`rooms/${roomCode}/gameState/round`).set(1);
-    db.ref(`rooms/${roomCode}/gameState/status`).set('lobby'); // Instantly sets lobby so hostDealsCards picks it up smoothly
+    db.ref(`rooms/${roomCode}/gameState/status`).set('lobby'); 
 };
 
 function updateScore(id, pts) { db.ref(`rooms/${roomCode}/players/${id}/score`).once('value', s => db.ref(`rooms/${roomCode}/players/${id}/score`).set((s.val()||0)+pts)); }
